@@ -1,0 +1,11 @@
+#
+# RFCOMM configuration file.
+#
+
+rfcomm0 {
+	bind no;
+  # Replace with the device ID of your HC06 from `hcitool scan`
+	device 00:13:12:18:62:59; # Replace with the device ID of your HC06
+	channel 1;
+	comment "Oscilloscope";
+}

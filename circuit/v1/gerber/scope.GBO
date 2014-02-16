@@ -1,0 +1,12 @@
+G04 DipTrace Beta 2.3.5.2*
+%INscope.GBO*%
+%MOIN*%
+%FSLAX44Y44*%
+G04*
+G70*
+G90*
+G75*
+G01*
+%LNBotSilk*%
+%LPD*%
+M02*
