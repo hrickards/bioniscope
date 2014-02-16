@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:custom="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp"
+    android:id="@+id/controls">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <com.harryrickards.bioniscope.TraceControlView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/traceOne"
+            custom:traceId="1"
+        />3
+
+        <com.harryrickards.bioniscope.TraceControlView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/traceTwo"
+            custom:traceId="2"
+        />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Time/div"
+                android:textSize="18sp"
+                android:id="@+id/timeDivLabel"
+            />
+            <TextView
+                android:layout_width="60sp"
+                android:layout_height="wrap_content"
+                android:text="1.00kHz"
+                android:id="@+id/timeDivFrequency"
+                android:layout_toLeftOf="@+id/timeDivPeriod"
+                android:layout_alignBottom="@+id/timeDivLabel"
+            />
+            <TextView
+                android:layout_width="50sp"
+                android:layout_height="wrap_content"
+                android:text="1.00us"
+                android:layout_alignParentRight="true"
+                android:layout_alignBottom="@+id/timeDivLabel"
+                android:id="@+id/timeDivPeriod"
+            />
+        </RelativeLayout>
+
+        <SeekBar
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/timeDivSlider"
+        />
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Connecting..."
+        android:layout_above="@+id/moreInfoText"
+        android:layout_alignParentRight="true"
+        android:textSize="18sp"
+        android:layout_marginBottom="16dp"
+        android:id="@+id/connectionStatus"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/more_info"
+        android:layout_alignParentBottom="true"
+        android:id="@+id/moreInfoText"
+    />
+
+</RelativeLayout>

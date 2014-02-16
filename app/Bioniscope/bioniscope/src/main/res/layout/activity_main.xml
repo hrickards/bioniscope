@@ -1,0 +1,30 @@
+<android.support.v4.widget.SlidingPaneLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <fragment
+        android:name="com.harryrickards.bioniscope.ControlsFragment"
+        android:id="@+id/controlsFragment"
+        android:layout_width="350dp"
+        android:layout_height="match_parent"
+        tools:layout="@layout/controls_fragment"
+    />
+
+    <FrameLayout
+        android:layout_width="400dp"
+        android:layout_height="match_parent"
+        android:id="@+id/fragmentContainer"
+        android:layout_weight="1"
+    />
+    
+    <!--<fragment
+        android:name="com.harryrickards.bioniscope.GraphFragment"
+        android:id="@+id/graphFragment"
+        android:layout_width="400dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        tools:layout="@layout/graph_fragment"
+    />-->
+</android.support.v4.widget.SlidingPaneLayout>

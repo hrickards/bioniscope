@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/Bioniscope.iml" filepath="$PROJECT_DIR$/Bioniscope.iml" />
+      <module fileurl="file://$PROJECT_DIR$/bioniscope/bioniscope.iml" filepath="$PROJECT_DIR$/bioniscope/bioniscope.iml" />
+    </modules>
+  </component>
+</project>
+

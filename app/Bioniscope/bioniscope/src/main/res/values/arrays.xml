@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="dropdownOptions">
+        <item>Waveform</item>
+        <item>Spectrum</item>
+        <item>Digital</item>
+    </string-array>
+</resources>

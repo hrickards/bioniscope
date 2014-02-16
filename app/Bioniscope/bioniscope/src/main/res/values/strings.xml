@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Bioniscope</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="more_info">Designed for use with Bioniscope. For more details see harryrickards.com.</string>
+    <string name="connecting">Connecting...</string>
+    <string name="connected">Connected</string>
+    <string name="connection_failed">Connection Failed</string>
+    <string name="bluetooth_required">This application requires a bluetooth adapter</string>
+    <string name="digital_fragment">Digital view coming soon...</string>
+    <string name="spectrum_fragment">Spectrum view coming soon...</string>
+
+</resources>

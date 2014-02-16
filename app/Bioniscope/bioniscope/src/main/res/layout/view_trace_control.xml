@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="10dip">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="18sp"
+        android:text="Trace"
+        android:id="@+id/traceTitle"
+        android:layout_marginBottom="10dp"
+    />
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:id="@+id/traceToggle"
+    />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Volts/div"
+        android:id="@+id/voltsDivLabel"
+        android:layout_below="@+id/traceTitle"
+        android:layout_marginRight="8dp"
+    />
+
+    <SeekBar
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/voltsDivLabel"
+        android:layout_toLeftOf="@+id/voltsDivValue"
+        android:layout_marginTop="25dp"
+        android:id="@+id/traceVoltsDiv"
+    />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/traceTitle"
+        android:id="@+id/voltsDivValue"
+        android:text="0.00V"/>
+</RelativeLayout>
