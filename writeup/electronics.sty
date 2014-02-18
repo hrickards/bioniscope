@@ -16,12 +16,17 @@
 \newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
 
 % Heading formatting
-% \usepackage[raggedright]{titlesec}
+\usepackage[raggedright]{titlesec}
 % \renewcommand{\thechapter}{\Alph{chapter}}
 % \renewcommand{\thesection}{\Alph{chapter}.\alph{section}}
 % \titleformat{\chapter}[hang]{\raggedright\Huge\bfseries}{\thechapter: }{0pt}{\Huge\bfseries}
+\titleformat{\chapter}[display] {\normalfont\LARGE\bfseries}{}{0pt}{\LARGE}
+
+% Sub figures
+\usepackage{subfig}
 
 % Todo notes
+\usepackage{todonotes}
 \usepackage[inline,draft,silent,nomargin]{fixme}
 % SO 68570
 \fxsetup{
@@ -80,7 +85,7 @@ minimum height=4em, trapezium left angle=70, trapezium right angle=-70, fill=blu
 
 % Figure captions
 \usepackage{caption}
-\usepackage{subcaption}
+% \usepackage{subcaption}
 
 % Code listings
 \usepackage{minted}
@@ -113,4 +118,19 @@ minimum height=4em, trapezium left angle=70, trapezium right angle=-70, fill=blu
 % Footnote definition
 \newcommand{\fdef}[2]{\footnote{\textbf{#1}\quad#2}}
 \newcommand{\fdeffpga}{\fdef{Field Programmable Gate Array}{a device that can be
-programmed to \textasciitilde become a very large logic circuit}}
+programmed to \textasciitilde become a very large logic circuit. This makes it
+much faster than a microcontroller at doing a specific job.}}
+
+% Tables and graphs
+\usepackage{pgfplotstable, booktabs}
+\pgfplotsset{
+  compat=1.6,
+  xlabel=$t$,
+  ylabel=$y(t)$,
+  axis lines=middle,
+  xlabel style={anchor=west},
+  ylabel style={anchor=south, yshift=0.5em},
+  no markers,
+  before end axis/.code={\addplot [draw=none, forget plot] coordinates {(0,0)};}
+}
+

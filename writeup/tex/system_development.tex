@@ -531,3 +531,157 @@ most popular mobile operating system, allowing the greatest number of people to
 use the oscilliscope. Additionally, it allows easy and open development, whereas
 competitors such as iOS require costly developer licenses, proprietary software
 and specific hardware.
+
+
+\section{Construction}
+Initially, a number of the subsystems were built individually on breadboards.
+This allowed the basic circuit details to be checked without requiring an
+infeasibly large circuit to be built on a breadboard. 
+
+\subsection{PCB Layout}
+Once this prototype verification step was performed, the PCB was laid out on a
+breadboard. This process consists of three main steps: inputting the schematic
+into the computer, laying out the schematic components onto the board and
+routing traces (the PCB equivalent of wires) between the components.
+
+Initially this was attempted using a piece of software called Eagle. A
+significant number of electronics projects use Eagle, from small hobbyist
+projects right up to industrial products. However, as this author started to lay
+components onto the PCB using Eagle, one encountered an error: the free version
+of Eagle only allows a maximum PCB size of \SI{100}{\mm}x\SI{80}{\mm}. For
+reasons discussed later, the PCB size needed to be \SI{100}{\mm}x\SI{100}{\mm}.
+The cheapest paid-version of Eagle is \$169, meaning it was much too expensive
+to purchase for the sake of this project. Instead, an alternative was sought.
+
+This author researched and briefly evaluated two alternatives: KiCAD and
+DipTrace. KiCAD is a piece of open source software, meaning it's free to
+use
+\footnote{There are two disctinct definitions of free that should be
+considered here: gratis free (without cost to the user, this is somewhat
+confusingly also called free as in beer) and libre free (without compromise to
+the user's liberties, this is also known as free as in speech and essentially
+means that the user has the right to run the software however they want, as
+well as the right to modify it, meaning the source code is freely available.
+Software that's Free (with a capital F) is also known as open-source software
+(there are major differences between the two terms, however for the purposes
+of this explanation the reader can consider them identical) is both free as in
+gratis and free as in libre, and common examples include LibreOffice (hence
+the name) and GNU/Linux (the operating system running everything from the
+majority of super computers to televisions to traffic lights). For more on this
+subject, see Richard Stallman's book `\textit{Free as in Freedom}', which is
+also Free and hence freely available on the internet.},
+and DipTrace, a commercial piece of software with a free version available
+limited to 2 signal layers\footnote{It would be impractical to have all of the
+  traces in a PCB in the same horizontal plane, as they would not be able to
+  cross at any point. Instead, a number of planes, or \textit{layers}, are used.
+  PCBs are made by pressing together a number of 2-sided PCB `chapters`, meaning
+  that common numbers of layers are 2, 4 or 6 (with higher numbers possible but
+  more expensive). As it's the cheapest available and offers enough trace
+routing, a 2 layer board will be used for this project} and 300
+pins\footnote{This project uses somewhere in the region of 250 pins, so this
+limit is not a problem}.
+
+Both are very capable pieces of software, and KiCAD would certainly be
+favourable for philosophical reasons. Howerver, the majority of the ICs used in
+the circuit are relatively uncommon. This means that CAD footprints (files
+containing the physical dimensions of the chip) are not readily available, so
+they must be manually created for each IC instead. This is a much quicker
+process in DipTrace than in KiCAD (and indeed than in Eagle), and for this
+reason alone DipTrace was chosen.
+
+There were no major issues in creating the circuit schematic in DipTrace,
+although a number of revisions were required for small improvements. Laying out
+the PCB and routing the traces was much harder. DipTrace contains tools to
+automatically place and route, however the electrical engineering community
+strongly recommends against using auto routers. Placing and routing is a task
+that's extremely hard for a computer to find an optimal solution
+to\footnote{There is a classification of such problems, known as NP. Very
+  briefly: a \textit{running time} can be assigned to a given algorithm. For
+  example, any algorithm to sort a list of numbers is at most
+  $\mathcal{O}\left(n\log{n}\right)$, meaning that as the list of numbers grows
+  longer, the running time of the algorithm grows slower than $n\log{n}$, where
+  $n$ is the length of the list. We say an algorithm is polynomial-time if the
+  running time is polynomial (so e.g., it's $\mathcal{O}\left(n^3\right)$ but
+  not $\mathcal{O}\left(2^n\right)$). We then say an NP problem is one where the
+  solution to the problem can be checked with a polynomial-time algorithm, but
+  there is no polynomial-time algorithm to find that solution. An NP-hard
+problem is then a problem that is at least as hard as the hardest NP problems.
+Routing just one trace, with no obstacles to avoid, is an NP-hard problem}.
+While software can make use of heuristics\footnote{A technique designed to find
+a good-enough solution to a problem, when finding the optimal one would take too
+long}, it's a commonly held belief that even the best autorouting software pales
+when compared to a human with a small amount of experience (it may help to think
+of PCB routing as art: while a computer can be programmed to come up with pieces
+of art, even a small child can create much better ones).
+
+Because of this, your author set about learning how to place and route PCBs. The
+American electronics retailer Sparkfun provide a number of online tutorials and
+videos regarding PCB routing which were extremely helpful. Eventually, the PCB
+was routed, and while an expert would have done much better it sufficed for the
+purposes of this project (particularly as there were no high voltages or
+high-speed signals ($\ge\SI{50}{\MHz}$) involved). To finish the board, mounting
+holes and silkscreen\footnote{The process is just screen printing, which
+originally used silk as the screen, hence the name \textit{silkscreen}} (the
+explanatory text and markings on a PCB) were added.
+
+\subsection{PCB Production}
+The final step in the process was to get the board manufactured. In an American
+or European fab house (the name for the company that prints the boards) this
+would be extremely expensive. For example, popular EuroCircuits quoted a price
+of over over over \pounds 90 to produce just \textbf{one} board.
+
+Instead, a Chinese proxy to a Chinese fab house was chosen (nearly all low cost
+Chinese retailers use the Golden Phoenix fab house, but ordering directly from
+them requires a minimum order of 100 square inches, far beyond the size of this
+project\footnote{The proxies do something called panelisation: group a number of
+small boards onto a larger board, have the large board made at a low cost and
+then sell on the small boards for a small amount of profit}). DFRobot was chosen
+because it offered more affordable delivery options than the other Chinese
+options\footnote{EMS post is universally available for only a couple of dollars,
+  but can take upwards of a month to arrive as it's simply air mail. Many
+  Chinese retailers will also send goods worth hundreds of pounds through EMS
+  post, simply writing `\textit{birthday card}` on the side meaning that while
+  the retailer doesn't have to pay any export fees there is a high chance of the
+  package spending weeks stuck in customs in the UK. Instead, a courier service
+was chosen. Most Chinese PCB retailers only offer UPS and FedEx, which would
+have cost around \$30 for this order. DFRobot offered DHL as well, which was
+just over half the cost at \$16}. The boards cost \$23.99 for 10 boards, with a
+\$16 delivery charge on top. At a cost of \$2.40 per board, ordering from a
+Chinese retailer made the boards over 60 times cheaper than orderin from a
+European fab house!
+
+As required, the boards were \SI{100}{mm}x\SI{100}{mm} and 2 layers. There were
+less choices available (the boards hade to be green, and coated in
+HASL\footnote{If the boards were to be sold commercially, then HASL couldn't be
+  used as it contains lead so breaks the EU Restriction of Hazardous Substances
+  Directive, but for this hobby project using HASL is fine. This does suggest
+  another reason why European fab houses are more expensive: hazardous
+  substances such as lead can't be used in the board, whereas in China that's
+not an issue}) than from a European fab house, but that didn't matter for this
+project. Due to the recent Chinese New Year, the boards took slightly longer
+than usual to be produced, although still took only 2 working days, something
+that EuroCircuits charge over \pounds 150 extra for.
+
+
+\section{Enclosure}
+
+To protect the circuit, an enclosure was needed. There were only a limited
+number of places were mounting holes could go on the PCB, so a custom-made
+enclosure had to be made rather than using a prebuilt one with standard mounting
+hole locations.
+
+The options available to this author were to produce the enclosure using either
+a 3D printer or a laser cutter. For easy examiner inspection, the enclosure
+needed to be transparent and only coloured plastic filament was available for
+the 3D printer, meaning the laser cutter needed to be used.
+
+Rather than using a traditional 3D CAD tool\footnote{Computer Aided Design tool,
+such as SolidWorks or AutoDesk Inventor}, OpenSCAD was used. This is an open
+source tool that allows 3D objects to be built using \textit{constructive solid
+geometry}\footnote{In essence, this allows objects to be built out of primitive
+  objects. For example, a basic hammer could be built out of a cuboid and a
+cylinder sized and placed appropriately.}. Once the 3D object was created, a
+small script was written that took horizontal slices of the object at
+appropriate heights, savings DXFs\footnote{An image format, similar to a JPGEG
+or PNG, that's commonly used with laser cutters} at each height.
+

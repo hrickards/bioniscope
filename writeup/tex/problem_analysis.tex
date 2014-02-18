@@ -2,13 +2,21 @@
 \section{Problem Definition}
 \subsection*{CROs and DSOs}
 
+\begin{figure}[h]
+  \centering
+  \subfloat[Cathode Ray Oscilloscope]{\includegraphics[width=3in]{img/scopes/cro.jpg}}
+  \hfill
+  \subfloat[Digital Storage Oscilloscope]{\includegraphics[width=3in]{img/scopes/dso.jpg}}
+  \caption{Existing oscilloscopes\autocite{CROPhoto,DSOPhoto}}
+\end{figure}
+
 Oscilloscopes available in secondary schools or sixth forms are generally basic
-analogue oscilloscopes known as CROs, or Cathode Ray Oscilooscopes (named so
+analogue oscilloscopes known as CROs, or Cathode Ray Oscilloscopes (named so
 because the display is a Cathode Ray Tube).~\autocite{DoctronicsScopes}
 
 The alternative is a DSO, or Digital Storage Oscilloscope. These work in a very
 different way to CROs. Like in a CRO, the input signal is first passed through
-some analogue circuitry to amplify it, and so on. However, it's then sampled
+some analogue circuitry to amplify it and so on. However, it's then sampled
 into a digital signal using a DAC (Digital to Analogue Converter) and processed
 using a microcontroller (perhaps using the help of an FPGA\fdeffpga or a
 DSP\fdef{Digital Signal Processor}{a custom microcontroller especially designed
@@ -22,18 +30,18 @@ being output onto some sort of digital screen.~\autocite{TiePieScopes}
 DSOs offer a number of advantages over CROs. As well as relatively basic
 differences such as the traces being much more sharply defined, DSOs allow
 digital signal processing to be done on the input signal. This means that, for
-example, DFTs (Discrete Fourier Transforms)\footnote{While DFTs are the ones
-  most famous transformations, mainly due to the prevalence of the FFT (Fast
-  Fourier Transform) algorithm, in practice DCTs (Discrete Cosine Transforms)
-  are more commonly used as they can be calculated quicker to achieve a similar
-end effect} can be run to produce a frequency spectrum of the input signal,
+example, DFTs (Discrete Fourier Transforms)\footnote{While DFTs are the most
+  famous transformations, mainly due to the prevalence of the FFT (Fast Fourier
+  Transform) algorithm, in practice DCTs (Discrete Cosine Transforms) are more
+  commonly used as they can be calculated more quickly whilst achieving a
+similar result} can be run to produce a frequency spectrum of the input signal,
 allowing the user to see both time-domain and frequency-domain representations
 of the signal.\footnote{This also means that DSOs can be used as basic spectrum
 analysers: essentially devices that plot frequency spectrums, these have uses as
 far ranging as determining GSM interference when planning mobile phone networks}
 
 Additionally, a DSO can be used to create a basic Logic Analyser. This is
-essentially the digital equivalent to an oscilloscope --- a relatively large
+essentially the digital equivalent of an oscilloscope --- a relatively large
 number of digital wires and buses are connected to the Logic Analyser and a
 timing diagram is output\footnote{In more advanced, standalone Logic Analysers,
 more complicated outputs such as decoded Ethernet packets can be
@@ -41,12 +49,14 @@ output}.~\autocite{ElectronicDesignMSO}
 
 \begin{figure}
   \includegraphics[width=\linewidth]{img/bitscope.png}
-  \caption[Logic Analyser Example Output]{Example output from a Logic Analyser ~\autocite{fig:Bitscope}}
+  \caption[Logic Analyser Example Output]{Example output from a Logic Analyser ~\autocite{Bitscope}}
 \end{figure}
 
-\subsection*{Problem Definition}
+\subsection*{Project Definition}
 
-This project aims to create a Digital Sampling Oscilloscope, with the following
+This project\footnote{As seen in various places in this document, the project
+  was nicknamed \textit{Bioniscope} --- a portmanteau of bionic (from Android)
+and oscilloscope} aims to create a Digital Sampling Oscilloscope, with the following
 more advanced features included:
 
 \begin{itemize}
@@ -79,9 +89,8 @@ oscilloscopes can be categorised by the following criteria:
     period. This is perhaps illustrated more clearly
     in~\cref{fig:EquivalentTimeSampling}.
 
-  While equivalent-time sampling offers a much faster sampling rate, it is more
-  complicated to implement so for the purposes of this project we will only be
-  considering real-time sampling.
+  While equivalent-time sampling offers a much faster sampling rate, it is much
+  more complicated to implement.
 
   \item \textbf{Sample Rate} The rate (in \SI{}{\Hz} or the equivalent
   \textit{samples per second}) at which the oscilloscope can take individual
@@ -122,42 +131,11 @@ oscilloscopes can be categorised by the following criteria:
 \begin{figure}
   \centering
   \includegraphics{img/equivalent_time_sampling.png}
+  \caption[Equivalent Time Sampling Diagram]{Diagram illustrating equivalent time sampling ~\autocite{EquivalentTimeSampling}}
   \label{fig:EquivalentTimeSampling}
-  \caption[Equivalent Time Sampling Diagram]{Diagram illustrating equivalent time sampling ~\autocite{fig:EquivalentTimeSampling}}
 \end{figure}
 
 \section{Practical Investigations}
-
-\subsection{Breadboard Frequency Investigation}
-
-A limiting factor in the bandwidth and sampling rate\footnote{The sampling rate
-will be influenced by this much more than one would expect --- for example, with
-the MAX114 ADC, to capture samples at \SI{1}{\MHz} the ADC must be communicated
-with at \SI{15}{\MHz}~\autocite{MAX114}} will be due to stray capacitances and
-inductances on the breadboards\footnote{As detailed later on, a PCB will be used
-for the final system, however prototyping will occur on breadboards so the
-maximum frequency on a breadboard is still a limiting factor} used to construct
-the system, which will cause a great deal of noise at high frequencies.
-
-Because of this, the first practical investigation undertaken was to find the
-attenuation of a signal running through a breadboard at various frequencies.
-
-A signal generator was connected to an oscilloscope through a number of
-connections on a breadboard, and the amplitude of the final signal recorded at
-various frequencies. The same experiment was then repeated connecting the
-oscilloscope directly to the signal generator.
-
-For each frequency, the gain in \SI{}{\dB} was then calculated using the
-equation
-
-\begin{align*}
-\text{Gain} & = 10\log_{10}\left(\frac{P_{out}}{P_{in}}\right)\\
-            & = 10\log_{10}\left[\frac{\frac{\left(V_{out}\right)^2}{R_{out}}}{\frac{\left(V_{in}\right)^2}{R_{in}}}\right]\\
-            & \approx 10\log_{10}\left[\frac{\left(V_{out}\right)^2}{\left(V_{in}\right)^2}\right]\\
-            & = 20\log_{10}\left(\frac{V_{out}}{V_{in}}\right)
-\end{align*}
-
-\fxwarning{Photos and results}
 
 \subsection{Oscilloscope Reliability Investigation}
 
@@ -172,20 +150,272 @@ the scope of this project\footnote{\textcite{VerilogTutorial}, found online at
 \url{http://www.asic-world.com/verilog/index.html}, is an excellent resource for
 learning Verilog}, let us just say that Verilog is a way of describing the
 propogation of signals based on dependencies on both time and other
-signals\autocite{VerilogWiki}.
+signals\autocite{VerilogWiki}. See~\cref{lst:flipFlop} for a very simple Verilog
+example.
 
-The FPGA was programmed to perform a 50\% duty-cycle clock divisions of the
+\begin{listing}[H]
+  \begin{minted}{verilog}
+    always @(posedge) clk begin
+      q <= d;
+    end
+  \end{minted}
+  \caption{A simple flip-flop implemented in Verilog}
+  \label{lst:flipFlop}
+\end{listing}
+
+The FPGA was programmed to perform 50\% duty-cycle clock divisions of the
 FPGA's internal\footnote{A high-quality crystal oscillator} \SI{50}{\MHz} clock,
 meaning the output frequency could be easily calculated using
 
-\begin{equation*}
+\begin{equation}
+  \label{eq:freqCalculation}
   f = \frac{\SI{50}{\MHz}}{2^n}
-\end{equation*}
+\end{equation}
 
-where $n$ is the clock divisor.
+where $n$ is the clock divisor. The accuracy of the crystal oscillator is so
+high (an average error value would be around
+$0.0005\%$~\autocite{CrystalOscillators}) compared to the accuracy of reading
+values from a small oscilloscope screen that we can ignore it in this instance.
 
-\fxwarning{Photos and results}
-\fxwarning{Verilog code}
+The Verilog code used can be seen in~\cref{lst:oscilloscopeTest}.
+
+\begin{listing}[H]
+  \inputminted{verilog}{code/oscilloscope_test.v}
+  \inputminted{verilog}{code/clock_divider.v}
+  \caption{Code used to produce the square wave to test the oscilloscope}
+  \label{lst:oscilloscopeTest}
+\end{listing}
+
+\subsubsection*{Data}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.8\textwidth]{img/experiments/scope/setup.jpg}
+  \caption{Equipment setup to test the CRO}
+  \label{fig:oscilloscopeTestSetup}
+\end{figure}
+
+Seen in~\cref{fig:oscilloscopeTestSetup}, the equipment was setup as described above. Frequency readings
+were taken over a number of values of $n$ ranging from 4 to 19. For each
+reading, the horizontal and vertical division settinsg were recorded, as well as
+the number of divisions counted in one period of the wave. From these, the
+measured frequency and amplitude were calculated.
+
+These measured values were compared to the actual frequency (as calculated
+by~\cref{eq:freqCalculation}) and amplitude (the digital output from the FPGA
+ranged from \SI{0}{\V} to it's logic-high level of \SI{3.3}{\V}, leading
+to an amplitude of \SI{1.65}{\V}) to find error values for the frequency and
+amplitude.
+
+The numerical results of the experiment can be seen
+in~\cref{tab:oscilloscopeData}.
+
+With $n=19$, the frequency was low enough that it was very difficult to take a
+reading of the number of y divisions per period due to the nature of cathode ray
+tubes. This can be seen in the results: the frequency error jumps from less than
+$1\%$ to over $90\%$. Because of this, $n=19$ will be considered an anomolous
+result and disregarded for the rest of this analysis.
+
+Note the high level of accuracy, particularly with regards to frequency. Due to
+previous bad experiences with this oscilloscope, your author was rather
+surprised at the results.  Almost all of the error can actually be put down to
+errors in the human measurement process. Take $n=7$ as an example: the number of
+X divisions was measured as $5.1$ to 1 decimal place, giving a percentage error
+of $0.98\%$. It is purely coincidental then, that the actual error is less than
+half that at $0.39\%$!
+
+\begin{landscape}
+  \begin{table}
+    \centering
+    \scalebox{.9}{
+      \begin{tabular}{rSSSSSSSSSS}
+        \toprule
+        &&&\multicolumn{4}{c}{Measured} &\multicolumn{2}{c}{Actual} &\multicolumn{2}{c}{Error (\%)}\\
+        \cmidrule(lr){4-7} \cmidrule(lr){8-9} \cmidrule(lr){10-11}
+        {$n$} & {Time/div (\si{\micro\second})} & {Voltage/div (\si{\V})} & {X div} & {Y div} & {Frequency (\si{\kHz})} & {Amplitude (\si{\V})} & {Frequency (\si{\kHz})} & {Amplitude (\si{\V})} & {Frequency} & {Amplitude}\\
+        \midrule
+
+        4 & 0.1 & 2 & 3.4 & 2.0 & 2940 & 2.0 & 3120 & 1.65 & 5.88 & 21.21\\
+        5 & 0.2 & 2 & 3.1 & 1.8 & 1610 & 1.8 & 1560 & 1.65 & 3.23 & 9.09\\
+        6 & 0.5 & 2 & 2.5 & 1.8 & 800 & 1.8 & 781 & 1.65 & 2.40 & 9.09\\
+        7 & 0.5 & 2 & 5.1 & 1.7 & 392 & 1.7 & 391 & 1.65 & 0.39 & 3.03\\
+        8 & 1 & 2 & 5.1 & 1.7 & 196 & 1.7 & 195 & 1.65 & 0.39 & 3.03\\
+        9 & 2 & 2 & 5.1 & 1.7 & 98.0 & 1.7 & 97.7 & 1.65 & 0.39 & 3.03\\
+        10 & 5 & 2 & 4.1 & 1.7 & 48.8  & 1.7 & 48.8 & 1.65 & 0.10 & 3.03\\
+        12 & 20 & 2 & 4.1 & 1.7 & 12.2 & 1.7 & 12.2 & 1.65 & 0.10 & 3.03\\
+        14 & 100 & 2 & 3.2 & 1.7 & 3.12 & 1.7 & 3.05 & 1.65 & 2.40 & 3.03\\
+        16 & 500 & 2 & 2.6 & 1.8 & 0.769 & 1.8 & 0.763 & 1.65 & 0.82 & 9.09\\
+        19 & 2000 & 2 & 2.7 & 1.7 & 0.185 & 1.7 & 0.0954 & 1.65 & 94.18 & 3.03\\
+
+        \bottomrule
+      \end{tabular}
+    }
+    \caption{Results from oscilloscope accuracy experiment}
+    \label{tab:oscilloscopeData}
+  \end{table}
+\end{landscape}
+
+\subsection*{Qualitative Results}
+
+\begin{figure}[h]
+  \includegraphics[width=\textwidth]{img/experiments/scope/wave.jpg}
+  \caption{Not-so-square wave shown on the oscilloscope}
+  \label{fig:oscilloscopeTestWave}
+\end{figure}
+
+In qualitative terms, however, the oscilloscope was not nearly as accurate.
+Looking at~\cref{fig:oscilloscopeTestWave}, one can see that at high frequencies the analogue
+bandwidth of the oscilloscope comes into play, causing the digital input to look
+very much like a summation of sine waves. In fact, this was still visible to a
+lesser extent until $n=12$ (corresponding to a frequency of \SI{12.2}{\kHz}).
+This means that while the oscilloscope can be used to accurately determine the
+frequency of high-frequency signals, it can't be used to determine the shape of
+a signal with any accuracy.
+
+Using the maths detailed in~\cref{sec:squareWaveFourierSeries} we can plot
+graphs of square wave approximations up to a certain number of harmonics, as
+seen in~\cref{fig:squareWaveApproximations}. Comparing these
+to~\cref{fig:oscilloscopeTestWave}, we find that the closest match\footnote{The
+  match is not exact because harmonics above the seventh harmonic are present,
+  they just have a reduced amplitude.  However by looking at the number of peaks
+  in one period of a wave we find the seventh harmonic is the highest one with a
+  major component present.} is the seventh harmonic graph. This means we can
+  approximate the analogue bandwidth of the oscilloscope as 7 times the
+  frequency of the signal, or
+  $7\times\SI{3.12}{MHz}=\SI{21.8}{MHz}$\footnote{Checking the datasheet of the
+  oscilloscope, we find the quoted bandwidth is \SI{20}{MHz} meaning we are
+accurate to within a third of a harmonic, as close as we could hope using this
+basic method.}.
+
+\begin{figure}[H]
+  \centering
+  \scalebox{.95}{
+    \begin{tabular}{cc}
+      \subfloat[First Harmonic]{
+        \begin{tikzpicture}
+          \begin{axis}[samples=200]
+            \addplot gnuplot{sin(x)};
+          \end{axis}
+        \end{tikzpicture}
+      }
+      &
+      \subfloat[Third Harmonic]{
+        \begin{tikzpicture}
+          \begin{axis}[samples=200]
+            \addplot gnuplot{sin(x)+1.0/3.0*sin(3*x)};
+          \end{axis}
+        \end{tikzpicture}
+      }
+      \\[7ex]
+      \subfloat[Fifth Harmonic]{
+        \begin{tikzpicture}
+          \begin{axis}[samples=200]
+            \addplot gnuplot{sin(x)+1.0/3.0*sin(3*x)+0.2*sin(5*x)};
+          \end{axis}
+        \end{tikzpicture}
+      }
+      &
+      \subfloat[Seventh Harmonic]{
+        \begin{tikzpicture}
+          \begin{axis}[samples=200]
+            \addplot gnuplot{sin(x)+1.0/3.0*sin(3*x)+0.2*sin(5*x)+1.0/7.0*sin(7*x)};
+          \end{axis}
+        \end{tikzpicture}
+      }
+      \\[7ex]
+      \subfloat[Ninth Harmonic]{
+        \begin{tikzpicture}
+          \begin{axis}[samples=200]
+            \addplot gnuplot{sin(x)+1.0/3.0*sin(3*x)+0.2*sin(5*x)+1.0/7.0*sin(7*x)+1.0/9.0*sin(9*x)};
+          \end{axis}
+        \end{tikzpicture}
+      }
+      &
+      \subfloat[Eleventh Harmonic]{
+        \begin{tikzpicture}
+          \begin{axis}[samples=200]
+            \addplot gnuplot{sin(x)+1.0/3.0*sin(3*x)+0.2*sin(5*x)+1.0/7.0*sin(7*x)+1.0/9.0*sin(9*x)+1.0/11.0*sin(11*x)};
+          \end{axis}
+        \end{tikzpicture}
+      }
+      \\
+    \end{tabular}
+  }
+  \caption{Approximations to a square wave up to certain harmonics}
+  \label{fig:squareWaveApproximations}
+\end{figure}
+
+
+\subsection{Bluetooth Distance Test}
+
+As discussed in~\cref{sec:CommOptions}, Bluetooth will be used to communicate
+between the microcontroller and Android device. Because of this, a practical
+investigation was undertaken to test the reliability of the Bluetooth link at
+different distances.
+
+The Bluetooth module to eventually be used in the final product, an HC06, was
+connected to an Arduino (an ATMega microcontroller development board allowing
+quick prototyping) and programmed to echo any data sent to it (so if the
+character \textit{A} was received by the HC06, it would immediately transmit
+back the character \textit{A}). This code can be seen
+in~\cref{lst:bluetoothDistanceTestArduino}.
+
+A python\footnote{A very high-level computer programming language that's suited
+  for tasks such as this, with libraries for things such as serial
+communication. For more information see various online resources.} program was
+then written on a laptop computer (with an inbuilt Bluetooth module) to
+communicate with the HC06. 384\footnote{3 times 128, and a convenient compromise
+between speed and accuracy} bytes were sent out, and the received data compared
+to the sent data to produce an accuracy figure. This code can be seen
+in~\cref{lst:bluetoothDistanceTestPython}\footnote{For details on how the
+  Bluetooth receiver in the laptop was setup as a serial device, see the online
+page for this project at \url{http://github.com/hrickards/bioniscope}.}.
+
+\begin{figure}
+  \inputminted{c}{code/bluetooth.ino}
+  \caption{The Arduino code used to echo back any characters received via
+  Bluetooth}
+  \label{lst:bluetoothDistanceTestArduino}
+\end{figure}
+
+\begin{figure}
+  \inputminted{python}{code/bluetooth.py}
+  \caption{The python code used to measure the accuracy of the Bluetooth link at various distances}
+  \label{lst:bluetoothDistanceTestPython}
+\end{figure}
+
+This program was run at with the laptop a number of different distances from the
+HC06. The results are shown in~\cref{tab:bluetoothData}.
+
+\begin{table}
+  \centering
+  \begin{tabular}{SS}
+    \toprule
+    {Distance (\si{m})} & {Reliability (\%)}\\
+    \midrule
+
+    0.0 & 100.00\\
+    1.0 & 100.00\\
+    2.0 & 100.00\\
+    3.0 & 100.00\\
+    4.0 & 100.00\\
+    5.0 & 100.00\\
+    5.5 & 6.51\\
+    6.0 & 0.00\\
+
+    \bottomrule
+  \end{tabular}
+  \caption{Results from bluetooth distance experiment}
+  \label{tab:bluetoothData}
+\end{table}
+
+At distances up to and including \SI{5}{\m}, the link was $100\%$
+reliable. At \SI{5.5}{\m} that figure dropped dramatically (suggesting that the
+connection was lost partway through the test), and at further distances the link
+dropped out completely. This means that the oscilloscope should be able to be
+used at distances of up to \SI{5}{\m} away from the device.
+
+\missingfigure{Photo of Experiment}
 
 \section{Numerical Parameters}
 
@@ -230,12 +460,13 @@ $\frac{\SI{500}{\kHz}}{25} = \SI{20}{\kHz}$.
 The maximum frequency into the analogue amplification stage will be
 \SI{20}{\kHz}, but we also need to take into consideration harmonics (remember,
 by Fourier any non-sinusoidal signal can be represented as a sum of sinusoidal
-signals of increasing frequency). To be safe, we will specify a minimum
+signals of increasing frequency). The effect of this can be seen all too clearly
+in ~\cref{fig:oscilloscopeTestWave} To be safe, we will specify a minimum
 bandwidth of \SI{1}{\MHz}.
 
 \subsection*{Resolution}
 
-Inaccuracies in the oscilliscope output are more likely to be caused by the
+Inaccuracies in the oscilloscope output are more likely to be caused by the
 analogue circuitry (in particular, the digital potentiometers are only accurate
 to 0.25\%) than a low resolution, so an 8 bit resolution will suffice (this
 offers an accuracy of $\approx 0.4\%$, more accurate than the digital

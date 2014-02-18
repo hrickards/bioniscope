@@ -27,3 +27,6 @@
 *.bcf
 *.run.xml
 *-blx.bib
+*.fls
+*.thm
+*pgf-plot*
