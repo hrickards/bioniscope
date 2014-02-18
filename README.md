@@ -11,3 +11,5 @@ The project was undertaken for my A-Level Electronics coursework, so things like
  * **enclosure** --- OpenSCAD laser-cut enclosure
  * **experiments** --- brief experiments done to e.g., determine existing scope accuracies
  * **research** --- various bits of saved research into things like scope triggering
+ * **simulations** --- LTSpice simulations of various parts of the circuit
+ * **writeup** --- the project report needed for the A-Level

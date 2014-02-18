@@ -1,0 +1,31 @@
+\documentclass[12pt,a4paper]{report}
+
+% Custom styles
+\usepackage{electronics}
+
+% Bibliography
+\usepackage[citestyle=authortitle,url=true]{biblatex}
+\addbibresource{electronics.bib}
+
+\begin{document}
+
+% Title page
+\input{./tex/title.tex}
+
+\tableofcontents
+\listoffigures
+%\listoftables
+
+% Section A: Problem Analysis and Solution Design
+\input{./tex/problem_analysis.tex}
+
+% Section B: System Development
+\input{./tex/system_development.tex}
+
+\appendix
+
+\listoffixmes
+
+\printbibliography
+
+\end{document}

@@ -1,0 +1,88 @@
+Circuit: * C:\users\harry\My Documents\electronics\spice\amplifier.asc
+
+WARNING: Less than two connections to node U1:9.  This node is used by E:U1:CMR.
+WARNING: Less than two connections to node U2:9.  This node is used by E:U2:CMR.
+Direct Newton iteration failed to find .op point.  (Use ".option noopiter" to skip.)
+Starting Gmin stepping
+Gmin = 10
+Gmin = 1.07374
+vernier = 0.5
+vernier = 0.25
+vernier = 0.125
+vernier = 0.0625
+Gmin = 1.10559
+vernier = 0.03125
+vernier = 0.015625
+Gmin = 1.05931
+vernier = 0.0078125
+vernier = 0.0104167
+vernier = 0.00520833
+Gmin = 1.04766
+vernier = 0.00694444
+vernier = 0.00347222
+Gmin = 1.03861
+vernier = 0.00462963
+vernier = 0.00231481
+vernier = 0.00308642
+Gmin = 1.03312
+vernier = 0.00154321
+vernier = 0.00205761
+Gmin = 1.02954
+vernier = 0.00102881
+vernier = 0.00137174
+Gmin = 1.02698
+vernier = 0.00182899
+vernier = 0.000914493
+Gmin = 1.02464
+vernier = 0.00121932
+vernier = 0.000609662
+vernier = 0.000812882
+Gmin = 1.0231
+vernier = 0.00108384
+vernier = 0.000541921
+Gmin = 1.02165
+vernier = 0.000722562
+vernier = 0.000963415
+vernier = 0.000481708
+Gmin = 1.02026
+vernier = 0.000642277
+vernier = 0.000481708
+Gmin = 1.01924
+vernier = 0.000642277
+vernier = 0.000481707
+Gmin = 1.01826
+vernier = 0.000642276
+vernier = 0.000481707
+vernier = 0.000642276
+vernier = 0.000481707
+Gmin = 1.01752
+Gmin = 0
+Gmin stepping failed
+
+Starting source stepping with srcstepmethod=0
+Source Step = 3.0303%
+Source Step = 33.3333%
+Source Step = 63.6364%
+Source Step = 93.9394%
+Source stepping succeeded in finding the operating point.
+
+
+Date: Sun Jan 26 14:49:51 2014
+Total elapsed time: 2.052 seconds.
+
+tnom = 27
+temp = 27
+method = modified trap
+totiter = 12379
+traniter = 2128
+tranpoints = 1049
+accept = 1049
+rejected = 0
+matrix size = 156
+fillins = 108
+solver = Normal
+Thread vector: 27.9/15.7[2] 8.8/7.9[2] 4.0/4.2[1] 1.8/2.2[1]  2592/500
+Matrix Compiler1: 8.82 KB object code size  6.3/4.0/[1.6]
+Matrix Compiler2: 12.3 KB object code size  3.7/5.0/[3.2]
+
+

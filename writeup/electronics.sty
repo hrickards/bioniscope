@@ -1,0 +1,116 @@
+\ProvidesPackage{electronics}
+
+% Fonts
+\usepackage{fontspec}
+\defaultfontfeatures{Ligatures=TeX}
+
+% Graphics
+\usepackage{graphicx}
+\DeclareGraphicsExtensions{.pdf,.png,.jpg,.mps}
+
+% References
+\usepackage{hyperref} 
+\usepackage{cleveref}
+
+% Horizontal rule (see title page)
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+
+% Heading formatting
+% \usepackage[raggedright]{titlesec}
+% \renewcommand{\thechapter}{\Alph{chapter}}
+% \renewcommand{\thesection}{\Alph{chapter}.\alph{section}}
+% \titleformat{\chapter}[hang]{\raggedright\Huge\bfseries}{\thechapter: }{0pt}{\Huge\bfseries}
+
+% Todo notes
+\usepackage[inline,draft,silent,nomargin]{fixme}
+% SO 68570
+\fxsetup{
+  status=draft,
+  author=,
+  theme=color
+}
+\usepackage{soul}
+\usepackage{xcolor}
+\definecolor{fxnote}{rgb}{0.8000,0.0000,0.0000}
+\colorlet{fxnote}{yellow}
+\definecolor{fxwarning}{rgb}{0.8000,0.0000,0.0000}
+\colorlet{fxwarningbg}{yellow}
+\definecolor{fxerror}{rgb}{0.8000,0.0000,0.0000}
+\colorlet{fxerror}{yellow}
+\definecolor{fxfatal}{rgb}{0.8000,0.0000,0.0000}
+\colorlet{fxfatal}{yellow}
+\makeatletter
+\renewcommand*\FXLayoutInline[3]{%
+  \@fxdocolon {#3}{%
+    \@fxuseface {inline}%
+    \begingroup
+      \sethlcolor{fx#1bg}%
+      \color {fx#1}\ignorespaces \hl{#3\@fxcolon #2}%
+    \endgroup}}
+\makeatother
+
+% SI units
+\usepackage[binary-units]{siunitx}
+
+% TIKZ graphics
+\usepackage{pdflscape}
+\usepackage{tikz}
+\usetikzlibrary{arrows} 
+\usetikzlibrary{positioning} 
+\usetikzlibrary{shapes.geometric} 
+\tikzstyle{process} = [rectangle, draw, fill=blue!20, text width=7em, text centered, minimum height=4em, fill=orange!30]
+\tikzstyle{io} = [trapezium, draw, fill=blue!20, text width=3em, text centered,
+minimum height=4em, trapezium left angle=70, trapezium right angle=-70, fill=blue!30]
+\tikzstyle{line} = [draw]
+\tikzstyle{arrow} = [line, ->]
+\tikzstyle{barrow} = [line, <->]
+\tikzstyle{darrow} = [draw, densely dotted, ->]
+\tikzstyle{bdarrow} = [draw, densely dotted, <->]
+\tikzset{> = triangle 45}
+\tikzset{node distance = 4.5cm}
+\tikzset{auto}
+\usetikzlibrary{calc}
+\usepackage{circuitikz}
+\newcommand*{\equal}{=}
+\newcommand*{\lb}{[}
+\newcommand*{\rb}{]}
+\newcommand*{\comma}{,}
+\usetikzlibrary{automata} 
+\tikzstyle{every state}=[minimum height=8em, node distance=5.5cm]
+
+% Figure captions
+\usepackage{caption}
+\usepackage{subcaption}
+
+% Code listings
+\usepackage{minted}
+\usepackage{etoolbox}
+
+% Layout tweaks
+\usepackage[parfill]{parskip}   % Lines between paragraphs
+\usepackage{geometry}           % Smaller margins
+\geometry{
+  top=1in,
+  inner=1in,
+  outer=1in,
+  bottom=1in,
+  headheight=3ex,
+  headsep=2ex,
+}
+
+% Math packages
+\usepackage{amsmath}
+
+% I2C protocol
+\newcommand{\ITC}{$\text{I}^2\text{C}$}
+
+% Creative Commons icons
+\usepackage{ccicons}
+
+% Text superscript
+\newcommand{\ts}{\textsuperscript}
+
+% Footnote definition
+\newcommand{\fdef}[2]{\footnote{\textbf{#1}\quad#2}}
+\newcommand{\fdeffpga}{\fdef{Field Programmable Gate Array}{a device that can be
+programmed to \textasciitilde become a very large logic circuit}}
