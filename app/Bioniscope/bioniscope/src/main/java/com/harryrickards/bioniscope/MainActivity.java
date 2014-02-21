@@ -17,7 +17,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -28,12 +30,18 @@ import java.io.InputStream;
 import java.util.UUID;
 
 public class MainActivity extends ActionBarActivity implements OnNavigationListener,
-        ControlsFragment.OnControlChangedListener {
+        ControlsFragment.OnControlChangedListener,
+        DigitalControlsFragment.OnDigitalControlChangedListener,
+        DigitalFragment.OnDigitalActionInterface,
+        SpectrumControlsFragment.OnSpectrumControlChangedListener {
 
     // Bluetooth
     BluetoothAdapter mBluetoothAdapter;
     CommandInterface mCommandInterface;
     private static final int REQUEST_ENABLE_BT = 1; // Request code returned from enabling BT
+    OutputStream mOutputStream;
+    InputStream mInputStream;
+    BluetoothSocket mSocket;
 
     boolean traceOneEnabled;
     boolean traceTwoEnabled;
@@ -49,10 +57,13 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
     static final String TIME_DIV = "timeDiv";
 
     TextView connectionStatus;
+    Button disconnectButton;
 
     // Fragments
     GraphFragment mGraphFragment;
+    ControlsFragment mControlsFragment;
     DigitalFragment mDigitalFragment;
+    DigitalControlsFragment mDigitalControlsFragment;
     SpectrumFragment mSpectrumFragment;
     static final int GRAPH_FRAGMENT = 0;
     static final int SPECTRUM_FRAGMENT = 1;
@@ -72,10 +83,31 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
                 actionBar.getThemedContext(), R.array.dropdownOptions,
                 android.R.layout.simple_spinner_dropdown_item);
         actionBar.setListNavigationCallbacks(mSpinnerAdapter, this);
+        // Go to digital
+        actionBar.setSelectedNavigationItem(2);
 
         // Show connection status to user
         connectionStatus = (TextView) findViewById(R.id.connectionStatus);
         connectionStatus.setText(getString(R.string.connecting));
+
+        // Disconnect when disconnect button clicked
+        disconnectButton = (Button) findViewById(R.id.disconnectButton);
+        disconnectButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // If currently connected
+                if (mCommandInterface != null) {
+                    // Disconnect from Bluetooth
+                    disconnectBluetooth();
+                // Otherwise if currently disconnected
+                } else {
+                    // Hide button while connecting
+                    disconnectButton.setVisibility(View.INVISIBLE);
+                    // Connect to Bluetooth
+                    setupBluetooth();
+                }
+            }
+        });
 
         // Check device has bluetooth and get bluetooth adapter
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -94,6 +126,9 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
     }
 
     private  void setupBluetooth() {
+        // Set status text to connecting
+        connectionStatus.setText(getString(R.string.connecting));
+
         // Enable bluetooth if not enabled
         if (!mBluetoothAdapter.isEnabled()) {
             Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
@@ -104,6 +139,7 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
 
             // TODO Remove
             // Send sample data
+            /*
             new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -113,6 +149,7 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
                     }
                 }
             }).start();
+            */
         }
     }
 
@@ -131,13 +168,45 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
 
         @Override
         protected void onPostExecute(Void args) {
+            // Show button
+            disconnectButton.setVisibility(View.VISIBLE);
             if (e == null) {
                 connectionStatus.setText(getString(R.string.connected));
+                disconnectButton.setText(getString(R.string.disconnect));
             } else {
                 connectionStatus.setText(getString(R.string.connection_failed));
+                disconnectButton.setText(getString(R.string.connect));
             }
         }
     }
+
+    // Disconnect from Bluetooth
+    private void disconnectBluetooth() {
+        // Set command interface to null (used to check if connected)
+        mCommandInterface = null;
+
+        // Close streams
+        if (mInputStream != null) {
+            try {mInputStream.close();} catch (IOException e) { e.printStackTrace(); }
+            mInputStream = null;
+        }
+        if (mOutputStream != null) {
+            try {mOutputStream.close();} catch (IOException e) { e.printStackTrace(); }
+            mOutputStream = null;
+        }
+
+        // Close socket
+        if (mSocket != null) {
+            try {mSocket.close();} catch (IOException e) { e.printStackTrace(); }
+            mSocket = null;
+        }
+
+        // Change disconnect button text to connect
+        disconnectButton.setText(getString(R.string.connect));
+        // Change status text to disconnected
+        connectionStatus.setText(getString(R.string.disconnected));
+    }
+
 
     // Connect to Bluetooth device
     private void connectBluetooth() throws IOException {
@@ -148,14 +217,18 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
 
         // Setup serial communication with device
         UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb"); // Serial UUID
-        BluetoothSocket mSocket = mDevice.createRfcommSocketToServiceRecord(uuid);
+        mSocket = mDevice.createRfcommSocketToServiceRecord(uuid);
         mSocket.connect();
 
-        OutputStream mOutputStream = mSocket.getOutputStream();
-        InputStream mInputStream = mSocket.getInputStream();
+        mOutputStream = mSocket.getOutputStream();
+        mInputStream = mSocket.getInputStream();
 
         // Setup new CommandInterface to start communicating with device
         mCommandInterface = new CommandInterface(mOutputStream, mInputStream);
+
+        // Start by requesting a digital sample
+        // TODO Check mode
+        onDigitalSampleRequested();
     }
 
     @Override
@@ -253,7 +326,7 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
         traceTwoVoltsDiv = getDouble(preferences, TRACE_TWO_VOLTS_DIV, 2.0);
         timeDiv = getDouble(preferences, TIME_DIV, 1.0);
 
-        setControls();
+        // setControls();
     }
 
     // Interface methods for when controls are changed
@@ -286,7 +359,7 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
     }
 
     // Set values of controls
-    public void setControls() {
+    /*public void setControls() {
         ControlsFragment controlsFragment = (ControlsFragment)
                 getSupportFragmentManager().findFragmentById(R.id.controlsFragment);
         controlsFragment.setTraceOneEnabled(traceOneEnabled);
@@ -295,16 +368,20 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
         controlsFragment.setTraceTwoVoltsDiv(traceTwoVoltsDiv);
         controlsFragment.setTimeDiv(timeDiv);
         updateGraphYBounds();
-    }
+    }*/
 
     // Switch to graph view
     public void switchToGraph() {
         if (mGraphFragment == null) {
             mGraphFragment = new GraphFragment();
         }
+        if (mControlsFragment == null) {
+            mControlsFragment = new ControlsFragment();
+        }
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.fragmentContainer, mGraphFragment);
+        transaction.replace(R.id.controlsContainer, mControlsFragment);
         transaction.addToBackStack(null);
         transaction.commit();
 
@@ -316,9 +393,18 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
         if (mDigitalFragment == null) {
             mDigitalFragment = new DigitalFragment();
         }
+        if (mDigitalControlsFragment == null) {
+            mDigitalControlsFragment = new DigitalControlsFragment();
+        }
+
+        // Sample provided we're connected to BT
+        if (mCommandInterface != null) {
+            onDigitalSampleRequested();
+        }
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.fragmentContainer, mDigitalFragment);
+        transaction.replace(R.id.controlsContainer, mDigitalControlsFragment);
         transaction.addToBackStack(null);
         transaction.commit();
     }
@@ -333,5 +419,25 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
         transaction.replace(R.id.fragmentContainer, mSpectrumFragment);
         transaction.addToBackStack(null);
         transaction.commit();
+    }
+
+    // Digital sample requested
+    public void onDigitalSampleRequested() {
+        // Run command to get data
+        Command command = new Command((byte) 0x02, new byte[] {}, 1024, new CommandInterface.CommandCallback() {
+            public void commandFinished(byte[] data) {
+                final byte[] mData = data;
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mDigitalFragment != null) {
+                            mDigitalFragment.setData(mData);
+                        }
+                    }
+                });
+            }
+        });
+        runCommand(command);
+
     }
 }

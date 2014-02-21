@@ -18,7 +18,7 @@ public class SettingsActivity extends PreferenceActivity {
         // Show up button
         // TODO Use getSupportActionBar
         // To to this, need a PreferenceActivity that extends from ActionBarActivity
-        getActionBar().setDisplayHomeAsUpEnabled(true);
+        // getActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
     @Override

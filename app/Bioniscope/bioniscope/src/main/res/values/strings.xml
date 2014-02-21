@@ -7,9 +7,13 @@
     <string name="more_info">Designed for use with Bioniscope. For more details see harryrickards.com.</string>
     <string name="connecting">Connecting...</string>
     <string name="connected">Connected</string>
+    <string name="disconnected">Disconnected</string>
     <string name="connection_failed">Connection Failed</string>
     <string name="bluetooth_required">This application requires a bluetooth adapter</string>
     <string name="digital_fragment">Digital view coming soon...</string>
     <string name="spectrum_fragment">Spectrum view coming soon...</string>
+    <string name="digital_title">Digital Capture</string>
+    <string name="disconnect">Disconnect</string>
+    <string name="connect">Connect</string>
 
 </resources>

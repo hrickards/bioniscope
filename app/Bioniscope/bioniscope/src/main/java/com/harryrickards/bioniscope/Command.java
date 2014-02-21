@@ -7,10 +7,12 @@ public class Command {
     public byte command;
     public byte[] outData;
     public int inDataLength;
+    public CommandInterface.CommandCallback callback;
 
-    public Command(byte mCommand, byte[] mOutData, int mInDataLength) {
+    public Command(byte mCommand, byte[] mOutData, int mInDataLength, CommandInterface.CommandCallback mCallback) {
         command = mCommand;
         outData = mOutData;
         inDataLength = mInDataLength;
+        callback = mCallback;
     }
 }

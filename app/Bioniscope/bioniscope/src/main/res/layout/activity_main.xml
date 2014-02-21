@@ -4,13 +4,57 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <fragment
+    <!--<fragment
         android:name="com.harryrickards.bioniscope.ControlsFragment"
         android:id="@+id/controlsFragment"
         android:layout_width="350dp"
         android:layout_height="match_parent"
         tools:layout="@layout/controls_fragment"
-    />
+    />-->
+    <RelativeLayout
+        android:layout_width="350dp"
+        android:layout_height="match_parent"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/controlsContainer"
+        />
+
+
+
+        <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Connecting..."
+        android:layout_above="@+id/moreInfoText"
+        android:layout_alignParentRight="true"
+        android:textSize="18sp"
+        android:layout_marginBottom="16dp"
+        android:id="@+id/connectionStatus"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/disconnect"
+            android:layout_above="@+id/moreInfoText"
+            android:layout_alignParentLeft="true"
+            android:visibility="invisible"
+            android:id="@+id/disconnectButton"
+        />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/more_info"
+            android:layout_alignParentBottom="true"
+            android:id="@+id/moreInfoText"
+        />
+    </RelativeLayout>
 
     <FrameLayout
         android:layout_width="400dp"

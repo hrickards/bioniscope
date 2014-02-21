@@ -18,6 +18,10 @@ public class CommandInterface {
     // Queue for storing commands to run
     Queue<Command> mQueue = new LinkedList<Command>();
 
+    public interface CommandCallback {
+        public void commandFinished(byte[] data);
+    }
+
     public CommandInterface(OutputStream mmOutputStream, InputStream mmInputStream) {
         mOutputStream = mmOutputStream;
         mInputStream = mmInputStream;
@@ -45,15 +49,24 @@ public class CommandInterface {
         while (bufferPosition < command.inDataLength) {
             int bytesAvailable = mInputStream.available();
             if (bytesAvailable > 0) {
-                mInputStream.read(buffer, bufferPosition, bytesAvailable);
+                mInputStream.read(buffer, bufferPosition, Math.min(bytesAvailable,command.inDataLength-bufferPosition));
                 bufferPosition += bytesAvailable;
             }
         }
+        // Read newline to finish command
+        while (true) {int bytesAvailable = mInputStream.available();
+            if (bytesAvailable > 0) {
+                mInputStream.read();
+                break;
+            }
+        }
+
+        command.callback.commandFinished(buffer);
 
         // Log data
-        Log.i("scope", "Sent command " + bytesToHex(new byte[]{command.command}));
-        Log.i("scope", "Sent data " + bytesToHex(command.outData));
-        Log.i("scope", "Received data " + bytesToHex(buffer));
+        //Log.i("scope", "Sent command " + bytesToHex(new byte[]{command.command}));
+        //Log.i("scope", "Sent data " + bytesToHex(command.outData));
+        //Log.i("scope", "Received data " + bytesToHex(buffer));
     }
 
     // Handle transceiving commands over IO streams
