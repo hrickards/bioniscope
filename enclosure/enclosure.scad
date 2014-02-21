@@ -18,11 +18,14 @@ outerMargin = 50;
 width = pcbWidth + pcbMargin + outerMargin;
 height = pcbHeight + pcbMargin + outerMargin;
 
-baseDepth = 5; // Depth of base
-keySlotDepth = 1.57; // Depth of layer for key slots
-mainDepth = 20; // Depth of main enclosure
-topDepth = 5; // Depth of top (lid)
-totalDepth = baseDepth + mainDepth + topDepth; // Total depth (for screws)
+totalBaseDepth = 10; // Depth of base
+baseHoleDepth = 5; // Depth of holes to leave for screws
+mainDepth = 30; // Depth of main enclosure
+topDepth = 10; // Depth of top (lid)
+totalDepth = totalBaseDepth + mainDepth + topDepth; // Total depth (for screws)
+
+// Calculate depths for base
+standDepth = totalBaseDepth - baseHoleDepth;
 
 // Screw dimensions
 screwSize = "M3";
@@ -32,14 +35,11 @@ screwInset = 10; // Distance from corner of screw
 
 // Banana plug dimensions
 bananaPlugRadius = 5;
-bananaPlugHeight = 15; // From bottom of enclosure
+bananaPlugHeight = 25; // From bottom of enclosure
 bananaPlugDistances = [0,11,30,41]; // Distances of banana plugs from LHS
 
 // Top hole dimensions (x,y,width,height)
 topHoles = [[0,0,10,10], [60,60,20,20]];
-
-// Key slot dimensions (from datasheet)
-keySlotCutoutRadius = 15;
 
 // Distances of mounting slots from bottom left corner of PCB
 // 3.3,0.15 in
@@ -47,12 +47,13 @@ keySlotCutoutRadius = 15;
 // 0.7, 3.65 in
 // 3.65, 2.3 in
 inchMultiplier = 25.4; // 1 inch in mm
-keySlotDistances = [
+mountingHoleDistances = [
 	[3.3*inchMultiplier, 0.15*inchMultiplier],
 	[0.25*inchMultiplier, 2.1*inchMultiplier],
 	[0.7*inchMultiplier, 3.65*inchMultiplier],
 	[3.65*inchMultiplier, 2.3*inchMultiplier]
 ];
+mountingHoleRadius = 5; // Radius of hole
 
 // To render properly
 ghost = 0.1;
@@ -61,9 +62,9 @@ ghost = 0.1;
 module enclosure() {
 	difference() {
 		union() {
+			stand();
 			color("red") base();
 			color("green") main();
-			stand();
 			color("pink") top();
 		}
 
@@ -93,52 +94,36 @@ module bananaPlugHole() {
 // Base of enclosure
 module base() {
 	// All above origin
-	translate([0,0,baseDepth-keySlotDepth/2]) difference() {
+	translate([0,0,standDepth+baseHoleDepth/2]) difference() {
 		// Base rounded box
-		roundedBox([width, height, keySlotDepth], cornerRadius, true);
+		roundedBox([width, height, baseHoleDepth], cornerRadius, true);
 
 		// Minus the mounting slots
-		for (distance=keySlotDistances) {
+		for (distance=mountingHoleDistances) {
 			translate([
 				distance[0]-pcbWidth/2,
 				distance[1]-pcbHeight/2,
-				baseDepth/2-keySlotDepth
+				0
 			]) mountingSlot();			
 		}
 	}
 }
 
 // Very bottom layer of enclosure
-// Keeps the key slots accessible
 module stand() {
-	translate([0,0,(baseDepth-keySlotDepth)/2]) difference() {
+	translate([0,0,standDepth/2]) difference() {
 		// Solid rounded box
 		roundedBox(
-			[width, height, baseDepth-keySlotDepth],
+			[width, height, standDepth],
 			cornerRadius,
 			true
 		);
-
-		// Circle cutouts around keyslots
-		for (distance=keySlotDistances) {
-			translate([
-				distance[0]-pcbWidth/2,
-				distance[1]-pcbHeight/2,
-				(keySlotDepth-baseDepth)/2
-			]) keySlotCutout();		
-		}
 	}
-}
-
-// Circular cutout for the key slot
-module keySlotCutout() {
-	translate([0,0,-ghost])
-		cylinder(r=keySlotCutoutRadius, h=baseDepth-keySlotDepth+2*ghost);
 }
 
 // Main enclosure
 module main() {
-	translate([0,0,baseDepth+mainDepth/2]) difference() {
+	translate([0,0,totalBaseDepth+mainDepth/2]) difference() {
 		// Solid rounded box
 		roundedBox([width, height, mainDepth-ghost], cornerRadius, true);
 
@@ -152,24 +137,12 @@ module main() {
 }
 
 
-// Key slot for mounting PCB
+// Hole for mounting PCB
 module mountingSlot() {
-	// From datasheet
-	joinLength = 4.3;
-	smallRadius = 1.6;
-	bigRadius = 3.05;
-	depth = keySlotDepth+ghost*2;
-
-	// Centered around small circle
-
-	translate([0,0,-depth/2])
+	depth = baseHoleDepth + ghost*2;
+	translate([0,0,0])
 		linear_extrude(height=depth, center=true) union() {
-			circle(r=smallRadius, $fn=100);
-			translate([joinLength,0,0])
-				circle(r=bigRadius, $fn=100);
-	
-			translate([joinLength/2,0])
-				square([joinLength,smallRadius*2], center=true);
+			circle(r=mountingHoleRadius, $fn=100);
 		}
 }
 
@@ -177,7 +150,7 @@ module mountingSlot() {
 module top() {
 	difference() {
 		// Simple solid layer
-		translate([0,0,baseDepth+mainDepth+topDepth/2])
+		translate([0,0,totalBaseDepth+mainDepth+topDepth/2])
 			roundedBox([width, height, topDepth-ghost], cornerRadius, true);
 
 		// Minus top holes
@@ -222,25 +195,25 @@ module screwHole() {
 }
 
 
-
-
 // =============== SLICING ===============
+// Material thickness
+allLayerHeight = 5;
 
-// Layer height for the stand (of height baseDepth-keySlotDepth)
-standLayerHeight = 3;
-standLayers = ceil((baseDepth-keySlotDepth)/standLayerHeight);
+// Layer height for the stand
+standLayerHeight = allLayerHeight;
+standLayers = ceil(standDepth/standLayerHeight);
 
 // Layer height for the base (thin bit with key slots in)
 // (keySlotDepth = 1.57 should be ~an integer multiple of this)
-baseLayerHeight = 1.57;
-baseLayers = ceil(keySlotDepth/baseLayerHeight);
+baseLayerHeight = allLayerHeight;
+baseLayers = ceil(baseHoleDepth/baseLayerHeight);
 
 // Layer height for the main enclosure
-mainLayerHeight = 5;
+mainLayerHeight = allLayerHeight;
 mainLayers = ceil(mainDepth/mainLayerHeight);
 
 // Layer height for the top enclosure
-topLayerHeight = 5;
+topLayerHeight = allLayerHeight;
 topLayers = ceil(topDepth/topLayerHeight);
 
 // Boundary to leave between adjacent slices
@@ -259,34 +232,23 @@ module slice() {
 	// Slice all the base layers below the stand layers
 	for (i=[0:baseLayers-1]) {
 		translate([i*sliceWidth, sliceHeight])
-			layer((baseDepth-keySlotDepth) + i*baseLayerHeight);
+			layer(standDepth + i*baseLayerHeight);
 	}
 
 	// Slice all the main layers below that
 	for (i=[0:mainLayers-1]) {
 		translate([i*sliceWidth, 2*sliceHeight])
-			layer(baseDepth + i*mainLayerHeight);
+			layer(totalBaseDepth + i*mainLayerHeight);
 	}
 
 	// Slice all the top layers below that
 	for (i=[0:topLayers-1]) {
 		translate([i*sliceWidth, 3*sliceHeight])
-			layer(baseDepth+mainDepth + i*mainLayerHeight);
+			layer(totalBaseDepth+mainDepth + i*mainLayerHeight);
 	}
 }
 
 
-
-
-// Standard layer height
-layerHeight = 5;
-
-// Heights to slice at
-sliceHeights = [
-	0, // Bottom layer
-	baseDepth - keySlotDepth,
-	5
-];
 
 // Get a layer slice at a certain z height
 module layer(z) {
@@ -294,14 +256,7 @@ module layer(z) {
 		translate([0,0,-(z+ghost)]) enclosure();
 }
 
-//module slice() {
-//	for (i = [0:len(sliceHeights)-1]) {
-//		translate([i*(width+sliceBoundary),0]) layer(sliceHeights[i]);
-//	}
-//}
-
-
 
 // =============== INTERFACE ===============
 // slice() for slices or 3denclosure() for 3D model
-3denclosure();
+slice();
