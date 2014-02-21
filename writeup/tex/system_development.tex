@@ -1,5 +1,6 @@
 \chapter{System Development}
 \section{Subsystems}
+\label{sec:subsystems}
 
 The system will be split up into a number of subsystems, shown
 in~\cref{fig:subsystems}. Each of these subsystems is described in more detail
@@ -67,6 +68,80 @@ in the sections below, and a brief description is given immediately below.
 For the purposes of this project wires are sufficient, however in a real-life
 scenario high-impedance, low-inductance test probes (usually coaxial cable)
 should be used.
+
+\subsection{Power Supply}
+
+\subsubsection*{Requirements}
+
+While it is not explicitly shown in~\cref{fig:subsystems}, the amplifiers, ADC,
+microcontroller and Bluetooth transceiver will all need to be powered.
+
+A \SI{5}{\V} rail will be needed that can source the following
+current\footnote{The figures are overestimations meaning there will
+definitely be enough current available.}:
+\begin{itemize}
+  \item \SI{5}{\mA} for the two amplifiers combined
+  \item \SI{5}{\mA} for the two digital potentiometers combined
+  \item \SI{15}{\mA} for the ADC
+  \item \SI{25}{\mA} for the microcontroller
+  \item \SI{30}{\mA} for the LED
+  \item \SI{30}{\mA} for the Bluetooth module
+\end{itemize}
+which gives a total of \SI{110}{\mA}.
+
+Similarly, a \SI{-5}{\V} rail will be needed for the first-stage amplifier that
+can sink at least \SI{5}{\mA}, and a ground rail will be needed that can source
+at least \SI{110}{\mA}\footnote{There will always be a positive load, so we do
+  not need to worry about the ground rail being able to source the \SI{5}{\mA}
+that will flow to the \SI{-5}{\V} rail}.
+
+\subsubsection*{Circuit}
+
+While researching this part of the circuit, your author came upon a chip known
+as an \textit{inverting charge pump}, a device that takes $V_s$ and \SI{0}{\V}
+as inputs and outputs $-V_s$ and \SI{0}{\V} as outputs\footnote{The way it does
+  this is very clear, but revolves around charging up a capacitor in one
+direction and then discharging it in the opposite direction.} --- essentially
+providing a low-current\footnote{The highest commonly-available current rating
+  seems to be about \SI{1}{\A}} dual power supply. This was implemented into the
+  oscilloscope's power supply as it means only a positive voltage and ground
+  need to be input, meaning it could potentially be powered by battery.
+
+Many of the chips (primarily the ADC and microcontroller) require very precise
+and stable power rails, and to that effect a voltage regulator will be used.
+Commonly known as a 7805 (although that specific device will not be used in this
+case), a voltage regulator takes a relatively high voltage (e.g., \SI{9}{\V}) as
+input and outputs a very precise lower voltage (e.g., \SI{5}{\V}) that does not
+fluctuate even when the output current changes rapidly. In addition to this,
+decoupling capacitors will be added to the amplifier, ADC and microcontroller to
+further reduce voltage fluctuations (the capacitor values will be taken directly
+from the relevant datasheets).
+
+\begin{landscape}
+  \begin{figure}[h]
+    \includegraphics[width=\linewidth]{img/power_supply/circuit.png}
+    \caption{Power supply circuit diagram}
+    \label{fig:powerSupplyDiagram}
+  \end{figure}
+\end{landscape}
+
+These two ideas, then, give rise to the circuit diagram shown
+in~\cref{fig:powerSupplyDiagram}. A single-rail power supply (perhaps from a
+\SI{9}{\V} battery) is used to power the system, and a switch (to let the user
+switch the oscilloscope off and on) and a forward-biased diode (to limit damage
+if the power supply is connected backwards) are connected immediately to the
+power rail.
+
+A MAX883 chip is then used as a fixed \SI{5}{\V} voltage regulator. Most
+semiconductor companies produce PDIP package \SI{5}{\V} voltage regulators, but
+Maxim Integrated's chip was chosen due the availability of free samples. As
+specified in the datasheet, a \SI{100}{\nF} capacitor is placed on the input and
+a \SI{2.2}{\uF} capacitor on the output.
+
+A MAX660 is then used as an inverting charge pump (this specific chip was chosen
+for similar reasons to the MAX883). Again, as specified on the datasheet a
+\SI{22}{\uF} capacitor is placed on the output and another between $CAP-$ and
+$CAP+$.
 
 \subsection{Amplifiers}
 
@@ -301,6 +376,16 @@ phase difference is unchanged}.
   \end{figure}
 \end{landscape}
 
+\subsubsection{Overall Circuit}
+
+See~\cref{fig:ampCircuitDiagram} for an overall circuit diagram.
+
+\begin{figure}[h]
+  \includegraphics[width=\textwidth]{img/amplifier/overall.png}
+  \caption[Amplifier circuit diagram]{Circuit diagram of complete amplifier}
+  \label{fig:ampCircuitDiagram}
+\end{figure}
+
 
 \subsection{ADCs}
 \label{sec:adcs}
@@ -319,11 +404,10 @@ microcontroller in which there's a delay of \SI{62.5}{\ns} (assuming a
 simplified to the following:
 
 \begin{enumerate}
-  \item Use $A_0$ and $A_1$ to choose the input signal ($00$ for input 0, $01$
-  for input 1, the only two inputs used in this project)
-  \item Pull $\overline{CS}$, $\overline{RD}$ and $\overline{WR}$\footnote{For
-  simplicity, $\overline{CS}$, $\overline{RD}$ and $\overline{WR}$ can all be
-  physically tied together and connected to just one microcontroller input} low
+  \item Use $A_0$ and $A_1$ to choose the input signal (there are only two
+    inputs in this project, so $A_0$ and $A_1$ are connected together meaning a
+    logic $0$ selects input 0 and a logic $1$ selects input 3)
+  \item Pull $\overline{CS}$, $\overline{RD}$ and $\overline{WR}$
   \item Wait approximately \SI{250}{\ns}
   \item Pull $\overline{CS}$, $\overline{RD}$ and $\overline{WR}$ back high
   \item Read in a sample from $D_0$ through $D_7$
@@ -334,7 +418,15 @@ that must be made to power the MAX114 and provide it with a reference voltage.
 
 Additionally, $\overline{PWRDN}$ must be kept high to keep the ADC powered on,
 and $MODE$ must be kept high to keep the ADC in Read-Write mode (of which
-pipeline mode is a subset).
+pipeline mode is a subset). Both of these should be pulled high through a
+resistor (\SI{3.3}{\kilo\ohm} being a common value) to limit current. Based on
+this,~\cref{fig:adcCircuitDiagram} shows the circuit schematic for the ADC.
+
+\begin{figure}[h]
+  \includegraphics[width=\textwidth]{img/adc/circuit.png}
+  \label{fig:adcCircuitDiagram}
+  \caption[ADC Circuit Diagram]{Diagram showing how ADC will be connected}
+\end{figure}
 
 \begin{figure}
   \centering
@@ -347,37 +439,98 @@ pipeline mode is a subset).
 \subsection{Microcontroller}
 
 Due to this author's significant previous experience with AVR microcontrollers,
-one will be used as there are no significant disadvantages over a PIC. The main
-requirements the microcontroller needs to satisfy are:
+one will be used as there are no significant disadvantages over a PIC. In
+addition, it is easier to obtain free samples from Atmel (the company that
+produce AVR microcontrollers) than it is from Microchip (the company that make
+PICs). The main requirements the microcontroller needs to satisfy are:
 
 \begin{itemize}
   \item Ability to use a \SI{16}{\MHz} clock
   \item Inbuilt UART communication (to communicate with the Bluetooth module)
-  \item A significant number (at least 20) input/output pins
+  \item At least 32 IO pins:
+    \begin{itemize}
+      \item 8 for data connections to the ADC
+      \item 5 for control connections to the ADC
+      \item 8 for digital data inputs
+      \item 4 ($DATA$, $SCK$ and two $CS$) for digital potentiometer
+        communication
+      \item 2 ($RX$ and $TX$) for Bluetooth module communication
+      \item 2 ($RX$ and $TX$) for USB module communication (for debugging
+        purposes\footnote{While in theory the Bluetooth module should just be
+          plug and play, a spare CP2102 USB to USART module will be used to
+          allow the microcontroller to talk to a laptop over USB to help fix any
+          problems that occur in the prototyping process}).
+      \item 3 for ISP header (the connections used to program the AVR)
+    \end{itemize}
   \item At least \SI{1}{\kilo byte} of SRAM (to store the 8192 bits of samples)
   \item Availability in a PDIP package
 \end{itemize}
 
-The ATMega328 (more commonly known as the chip powering most Arduinos) was
-chosen because it satisfies all of these requirements and this author had a
-number of spare chips not being used.
+The ATMega1284P was chosen because it's the only 8-bit AVR that meets the above
+criteria (any AVRs with more than 32 IO pins are not available in PDIP
+packages)!
 
 \subsubsection{Circuit}
+
+\begin{figure}[h]
+  \includegraphics[width=\textwidth]{img/microcontroller/circuit.png}
+  \caption[Microcontroller Circuit Diagram]{Circuit diagram showing connections to the microcontroller}
+  \label{fig:microcontrollerCircuitDiagram}
+\end{figure}
+
+
 For the chip to operate, a \SI{16}{\MHz} crystal oscillator must be connected
 between $XTAL1$ and $XTAL$, with a \SI{22}{\pF} capacitor from each pin to
-ground. Additionally, the following power connections must be made:
+ground.
 
+The following power connections must also be made:
 \begin{itemize}
-  \item $RESET$ to \SI{5}{\volt} through a \SI{10}{\kilo\ohm} resistor
   \item Both $GND$s to ground
-  \item $VCC$ and $AVCC$ to \SI{5}{\volt}
+  \item $V_{CC}$ and $AV_{CC}$ to \SI{5}{\volt}, with a \SI{100}{\nF} and \SI{1}{\uF}
+    capacitor in parallel down to ground (acting as decoupling capacitors)
 \end{itemize}
 
-To program the chip, an AVR programmer must be used. These are available very
-cheaply (such as the USBASP for \pounds 5 from eBay), but an Arduino
-(essentially a microcontroller development board) can also be used, as shown
-in~\cref{fig:arduino_programmer}. As this author had a spare Arduino, this
-option was used.
+$PD0$ and $PD1$ (in their role as $RXD0$ and $TXD0$ for the chip's inbuilt UART
+communication) must be connected to $RX$ and $TX$ respectively on the USB to
+UART module\footnote{The module labels $RX$ such that it should be connected to
+$RX$ on the microcontroller}.
+
+Similarly, $PD2$ and $PD3$ (in their role as $RXD1$ and $TXD1$ for the inbuilt
+UART) must be connected to $TX$ and $RX$ respectively on the Bluetooth
+module\footnote{Opposite to the USB module, the Bluetooth module labels $RX$
+such that it should be connected to $TX$ on the microcontroller}.
+
+$PB5$, $PB6$ and $PB7$ (in their roles as $MOSI$, $MISO$ and $SCK$ in the chip's
+programming connections) should be connected to $MOSI$, $MISO$ and $SCK$
+respectively on the ISP (programming) header. The $V_{CC}$ and $GND$ on the
+programming header should also be connected to $V_{CC}$ and $GND$ on the chip.
+
+$RESET$ (an active-low input that restarts the microcontroller) should be
+connected to $V_{CC}$ through a \SI{4.7}{\kilo\ohm} resistor, with a
+\SI{10}{\nF} decoupling capacitor down to ground. It should also be connected to
+$RESET$ on the ISP header (when programming the microcontroller, the computer
+will need to reset it) and through a switch down to ground (to allow the user to
+restart the microcontroller if necessary).
+
+Bus A (i.e., $PA0$ through $PA7$) will be connected directly to the digital
+inputs, and bus C (i.e., $PC0$ through $PC7$) will be connected to the data
+outputs ($D0$ through $D7$ of the ADC). The ADC control lines will be connected
+to the unused pins on bus B: $WR$ to $PB0$, $CS$ to $PB1$, $INT$ to $PB2$,
+$ADDR$ to $PB3$ and $RD$ to $PB4$.
+
+Finally, the digital potentiometers will be connected to the unused pins on bus
+D: $DATA$ to $PD4$, $SCK$ to $PD5$ and the two $CS$s to $PD6$ and $PD7$.
+
+All of these connections are shown visually
+in~\cref{fig:microcontrollerCircuitDiagram}.
+
+\subsubsection{Programming}
+
+To program the chip, an AVR programmer must be used (and connected to the ISP
+header as detailed above). These are available very cheaply (such as the USBASP
+for \pounds 5 from eBay), but an Arduino (essentially a microcontroller
+development board) can also be used, as shown in~\cref{fig:arduino_programmer}.
+As this author had a spare Arduino, this option was used.
 
 \begin{figure}
   \centering
@@ -389,6 +542,10 @@ option was used.
 
 
 \subsubsection{Serial Interface}
+
+The Android device and the microcontroller will communicate via Bluetooth, which
+will emulate a serial link. In essence, a form of communication will be
+established where sequences of bytes can be sent by both devices simeltanousely.
 
 The following protocol was designed for serial communication between the Android
 device and the microcontroller. After taking a full 1024 samples, the
@@ -449,7 +606,10 @@ device would have to send \texttt{0x01}, then store the next 1024 received bytes
 
 \subsubsection{ADC Communication}
 The way in which the microcontroller will communicate with the ADC is described
-in~\cref{sec:adcs}.
+in~\cref{sec:adcs}. Note that while $INT$ is not required for communication, it
+is connected as an input to the microcontroller in case the communication
+protocol is changed (i.e., a different mode is used over pipelined) during the
+prototyping process.
 
 \subsubsection{Digital Potentiometer Commmunication}
 
@@ -485,13 +645,32 @@ To send a 16-bit byte to the digital potentiometer the following must be done:
   \item Pull $\overline{SS}$ back high
 \end{enumerate}
 
-\fxwarning{More on digital pot. communication}
+The potentiometer has 128 resistance levels that can be chosen from (with 0
+being \SI{75}{\ohm} and 127 being \SI{10}{\kilo\ohm}). Suppose we want to set
+the resistance to a level $x \in \mathopen[0,127\mathclose]$. Then let $P$ be
+the 7-bit binary number representing $x$. To set the resistance to $x$, we write
+9 zeroes followed by $P$.
+
+As detailed in the serial protocol above, the Android device sends a byte $B$,
+where the MSB determines which potentiometer to change the the 7 LSB determine
+the value to send. To determine the address from this we can run
+
+\mint{c}/Byte address = (control & 0x80) ? 0x01: 0x00;/
+
+to set $address$ to the MSB of control. Similarly, we can set the value by
+getting the 7 LSB using
+
+\mint{c}/Byte level = control & 0x7F;/
+
 
 \subsubsection{Program}
 To perform all of the above tasks, then, the microcontroller will need to run
 the following program:
 
 \begin{itemize}
+  \item Setup serial communication (Bluetooth)
+  \item Setup potentiometer SPI communicator
+  \item Setup ADC communication and initialise data variables
   \item Loop forever:
     \begin{itemize}
       \item Loop 1024 times:
@@ -511,6 +690,14 @@ the following program:
     \end{itemize}
 \end{itemize}
 
+There are two main programming languages that can be used for AVR
+microcontrollers: Assembly and C. While Assembly was taught in the course, your
+author has more extensive previous personal experience using C to program
+microcontrollers. Additionally, the higher level of C means less code will be
+needed to obtain the same result, and that code wil be more logically
+structured. Furthermore, modern C compilers can optimise C code to a smaller
+amount of Assembly than any human programmer, meaning the only reason to use
+Assembly is for educational purposes.
 
 \subsection{Bluetooth Transceiver}
 \label{sec:wireless_transceiver}
@@ -518,6 +705,16 @@ the following program:
 As discussed in~\cref{sec:CommOptions}, Bluetooth was chosen to communicate with
 the Android device acting as the user interface. In particular, the JY-MCU HC-06
 was chosen.
+
+This communicates with the microcontroller via the inbuilt UART interface, as
+illustrated in the code in~\cref{lst:uartExample}.
+
+\begin{listing}[H]
+  \inputminted{c}{code/USART.c}
+  \caption{Example code used to communicate over Bluetooth via the USART
+  interface}
+  \label{lst:uartExample}
+\end{listing}
 
 \subsection{User Interface}
 \label{sec:user_interface}
@@ -531,6 +728,24 @@ most popular mobile operating system, allowing the greatest number of people to
 use the oscilliscope. Additionally, it allows easy and open development, whereas
 competitors such as iOS require costly developer licenses, proprietary software
 and specific hardware.
+
+As it's by far the most common and most supported language used for Android,
+Java was used to create an Android application that interfaced with the
+oscilloscope. Discussing the development of this application is far beyond the
+scope (pun not intended) of this project, but the code is fully documented and
+available on GitHub at \url{http://github.com/hrickards/bioniscope}. A number of
+screenshots are shown in.
+
+\fxwarning{Screenshots of Android App}
+
+
+
+\section{Circuit}
+Combining all of the subsystems in~\cref{sec:subsystems}, the overall circuit
+diagrams shown below ar reached.
+
+\includepdf[landscape=true]{img/pcb/digital.pdf}
+\includepdf[landscape=true]{img/pcb/analogue.pdf}
 
 
 \section{Construction}
@@ -624,6 +839,33 @@ holes and silkscreen\footnote{The process is just screen printing, which
 originally used silk as the screen, hence the name \textit{silkscreen}} (the
 explanatory text and markings on a PCB) were added.
 
+The routed PCB diagram can be seen in a scale version below, and a larger
+version in~\cref{fig:largePCBDiagram}. A 3D render the board can be seen
+in~\cref{fig:pcb3DRender}. To check component footprints (sizes), an early
+version of the PCB was printed onto paper and attached to foam, as seen
+in~\cref{fig:pcbFoam}
+
+\includepdf[landscape=true]{img/pcb/pcb.pdf}
+
+\begin{figure}[H]
+  \includegraphics[width=\linewidth]{img/pcb/pcbBig.png}
+  \caption[PCB (traces)]{Routed PCB}
+  \label{fig:largePCBDiagram}
+\end{figure}
+
+\begin{figure}[H]
+  \includegraphics[width=\linewidth]{img/pcb/pcb3D.png}
+  \caption[PCB (3D render)]{3D render of the PCB populated with components (produced by DipTrace)}
+  \label{fig:pcb3DRender}
+\end{figure}
+
+\begin{figure}[H]
+  \includegraphics[width=\linewidth]{img/pcb/pcbFoam.png}
+  \caption[PCB (Mockup)]{Photograph of a mockup of the PCB produced using paper and foam,
+  allowing the sizes and placements of components to be checked}
+  \label{fig:pcbFoam}
+\end{figure}
+
 \subsection{PCB Production}
 The final step in the process was to get the board manufactured. In an American
 or European fab house (the name for the company that prints the boards) this
@@ -662,6 +904,41 @@ project. Due to the recent Chinese New Year, the boards took slightly longer
 than usual to be produced, although still took only 2 working days, something
 that EuroCircuits charge over \pounds 150 extra for.
 
+\subsection{Obtaining Parts}
+
+All the ICs had to be specially obtained for the circuit, as they weren't
+available in school. Rather than have to purchase them, your author made good
+use of the samples programmes run by most semiconductor companies.
+
+Take, for example, the MAX114 ADC. Such a specialist chip would have to be
+ordered from a large electronics distributor such as Mouser, who sell it at
+\pounds 4.71 per chip. Instead, a number (in this case, 2 were obtained along
+with 2 other Maxim ADCs of a similar cost for personal projects) can be freely
+obtained from Maxim Integrated, the semiconductor company who make the chip, by
+filling out a samples request. Maxim then sent the chips within 3 days (one of
+those days being Boxing Day), and they were delivered from the Philliphines in a
+further 2 days. All in all, the chips were delivered in the same time it would
+have taken had they been ordered from Mouser, but \pounds 25 had been
+saved\footnote{Assuming the standard \pounds 10 for delivery from Mouser.}.
+
+One might question why companies such as Maxim provide this free service, and
+the answer is twofold. If an engineer used a free sample from Maxim when
+prototyping the `\textit{next big thing}', a lot more chips would be required
+when producing the real product and Maxim would make a lot more money than it
+lost by giving out free samples to lots of engineers. Similar reasoning applies
+to students: if the engineers at multi-billion dollar companies all received
+free samples from Maxim when they were in college and hence developed brand
+loyalty, Maxim will make lots of money.
+
+It should be pointed out that Maxim are not the only company running this
+scheme: as of writing, Maxim, Analog Devices, Texas Instruments (or National
+Semiconductor), Atmel, Fairchild Semiconductor, Microchip and Linear Technology
+are just some of the more well-known companies that offer this service (in fact,
+the first 4 provided free samples for this project). Furthermore, if one becomes
+a little more adventorous and searches a little further afield, free samples can
+be found for everything from enclosures to superbright LEDs. If the reader is
+interested in more information, you're advised to
+consult~\textcite{LadyAdaSamples}.
 
 \section{Enclosure}
 

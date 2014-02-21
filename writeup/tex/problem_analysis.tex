@@ -7,7 +7,7 @@
   \subfloat[Cathode Ray Oscilloscope]{\includegraphics[width=3in]{img/scopes/cro.jpg}}
   \hfill
   \subfloat[Digital Storage Oscilloscope]{\includegraphics[width=3in]{img/scopes/dso.jpg}}
-  \caption{Existing oscilloscopes\autocite{CROPhoto,DSOPhoto}}
+  \caption[Existing oscilloscopes]{Existing oscilloscopes\autocite{CROPhoto,DSOPhoto}}
 \end{figure}
 
 Oscilloscopes available in secondary schools or sixth forms are generally basic
@@ -191,7 +191,7 @@ The Verilog code used can be seen in~\cref{lst:oscilloscopeTest}.
 \begin{figure}[h]
   \centering
   \includegraphics[width=0.8\textwidth]{img/experiments/scope/setup.jpg}
-  \caption{Equipment setup to test the CRO}
+  \caption[CRO Test Setup]{Equipment setup to test the CRO}
   \label{fig:oscilloscopeTestSetup}
 \end{figure}
 
@@ -259,7 +259,7 @@ half that at $0.39\%$!
 
 \begin{figure}[h]
   \includegraphics[width=\textwidth]{img/experiments/scope/wave.jpg}
-  \caption{Not-so-square wave shown on the oscilloscope}
+  \caption[CRO test waveform]{Not-so-square wave shown on the oscilloscope}
   \label{fig:oscilloscopeTestWave}
 \end{figure}
 
@@ -341,7 +341,7 @@ basic method.}.
       \\
     \end{tabular}
   }
-  \caption{Approximations to a square wave up to certain harmonics}
+  \caption[Square Wave Harmonics]{Approximations to a square wave up to certain harmonics}
   \label{fig:squareWaveApproximations}
 \end{figure}
 
@@ -373,19 +373,28 @@ page for this project at \url{http://github.com/hrickards/bioniscope}.}.
 
 \begin{figure}
   \inputminted{c}{code/bluetooth.ino}
-  \caption{The Arduino code used to echo back any characters received via
+  \caption[Bluetooth experiment Arduino code]{The Arduino code used to echo back any characters received via
   Bluetooth}
   \label{lst:bluetoothDistanceTestArduino}
 \end{figure}
 
 \begin{figure}
   \inputminted{python}{code/bluetooth.py}
-  \caption{The python code used to measure the accuracy of the Bluetooth link at various distances}
+  \caption[Bluetooth experiment python code]{The python code used to measure the accuracy of the Bluetooth link at various distances}
   \label{lst:bluetoothDistanceTestPython}
 \end{figure}
 
 This program was run at with the laptop a number of different distances from the
 HC06. The results are shown in~\cref{tab:bluetoothData}.
+See~\cref{fig:bluetoothExperimentSetup} for a photo of the setup.
+
+\begin{figure}[H]
+  \includegraphics[width=\textwidth]{img/bluetooth/setup.jpg}
+  \caption[Bluetooth Experiment Setup]{Photo showing the equipment used (an
+    Arduino connected to an HC06 bluetooth module) for the Bluetooth distance
+  experiment}
+  \label{fig:bluetoothExperimentSetup}
+\end{figure}
 
 \begin{table}
   \centering
@@ -414,8 +423,6 @@ reliable. At \SI{5.5}{\m} that figure dropped dramatically (suggesting that the
 connection was lost partway through the test), and at further distances the link
 dropped out completely. This means that the oscilloscope should be able to be
 used at distances of up to \SI{5}{\m} away from the device.
-
-\missingfigure{Photo of Experiment}
 
 \section{Numerical Parameters}
 
@@ -511,12 +518,23 @@ USB.
 
 This would perhaps be the easiest way to implement the communication. Small
 discrete devices, such as the CP2102~\autocite{CP2102}, convert between the
-relatively complicated USB protocol and the simple UART protocol. In fact,
-nearly all microcontrollers now come with a built-in USART interface, so the
-microcontroller side of things would be literally `plug and
+relatively complicated USB protocol and the simple UART\footnote{A UART
+  (Universal Asynchronous Receiver/Transmitter is actually a piece of hardware
+  that takes in parallel data (usually a byte made up of 8 bits) and transmits
+  it serially according to a certain serial protocol while also receiving data
+  serially and outputting it in parallel. While pedantically it's not correct,
+  we'll use UART protocol to refer to this protocol as is commonly done. There
+  is also a device called a USART, or Universal Synchronous/Asynchronous
+  Receiver/Transmitter. As the name suggests, these support sending data in both
+  a synchronous and asynchronous manner, and are very common inside
+  microcontrollers. However, in this document we'll take UART and USART to mean
+  the same thing: transmitting data asynchronously. As there is no synchronous
+data transmission required in the oscilloscope, this will not be an issue.}
+protocol. In fact, nearly all microcontrollers now come with a built-in USART
+interface, so the microcontroller side of things would be literally `plug and
 play'\footnote{Various configuration words would have to be moved to registers
-to initialise USART communication at the start of the program, but beyond that
-there would simply be registers for writing data, reading data and checking if
+  to initialise USART communication at the start of the program, but beyond that
+  there would simply be registers for writing data, reading data and checking if
 data is available to be read}.
 
 On the Android side, the microcontroller would appear as a serial communication
