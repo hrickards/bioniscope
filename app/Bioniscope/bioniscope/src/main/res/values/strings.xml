@@ -15,5 +15,5 @@
     <string name="digital_title">Digital Capture</string>
     <string name="disconnect">Disconnect</string>
     <string name="connect">Connect</string>
-
+    <string name="time_sample_label">Time/sample (us)</string>
 </resources>

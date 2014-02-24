@@ -1,16 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:custom="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:layout_height="wrap_content">
 
     <Button
         android:layout_width="250dp"
         android:layout_height="50dp"
         android:text="Capture"
         android:id="@+id/digitalCaptureButton"
-        />
-</LinearLayout>
+     />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/digitalCaptureButton"
+        android:paddingTop="15dp"
+        android:text="@string/time_sample_label"
+        android:id="@+id/timeSampleDescription"
+    />
+
+    <SeekBar
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/timeSampleDescription"
+        android:id="@+id/timeSampleSlider"
+    />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/timeSampleDescription"
+        android:layout_alignParentRight="true"
+        android:text=""
+        android:id="@+id/timeSampleLabel"
+    />
+
+</RelativeLayout>

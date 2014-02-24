@@ -78,7 +78,7 @@ PROJECTNAME=bioniscope
 # Use .cc, .cpp or .C suffix for C++ files, use .S 
 # (NOT .s !!!) for assembly source code files.
 PRJSRC=main.c USBUSART.c BTUSART.c Command.c Debugger.c Pots.c\
-	   SPI.c Sampler.c
+	   SPI.c Sampler.c Global.c
 
 # additional includes (e.g. -I/path/to/mydir)
 INC=

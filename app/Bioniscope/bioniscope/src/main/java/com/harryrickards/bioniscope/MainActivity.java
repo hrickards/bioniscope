@@ -440,4 +440,25 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
         runCommand(command);
 
     }
+
+    public void onDigitalTimeSampleChanged(double timeSample) {
+        if (mDigitalFragment != null) {
+            mDigitalFragment.setTimeSample(timeSample);
+        }
+
+        Log.w("digital time sample", Double.toString(timeSample));
+        int timeDelay = (int) Math.floor(timeSample - 1.6);
+        if (timeDelay < 0) { timeDelay = 0; }
+        Log.w("digital time delay", Integer.toString(timeDelay));
+
+        // Set time
+        byte[] commandData = new byte[] {(byte) ((byte)timeDelay>>8), (byte) ((byte)timeDelay&0xFF)};
+        Log.w("time delay bytes", CommandInterface.bytesToHex(commandData));
+        Command command = new Command((byte) 0x06, commandData, 0, new CommandInterface.CommandCallback() {
+            public void commandFinished(byte[] data) {
+                onDigitalSampleRequested();
+            }
+        });
+        runCommand(command);
+    }
 }

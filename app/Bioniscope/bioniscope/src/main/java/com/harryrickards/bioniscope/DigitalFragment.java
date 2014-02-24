@@ -20,6 +20,7 @@ public class DigitalFragment extends Fragment {
     OnDigitalActionInterface mCallback;
     GraphView mGraphView;
     GraphViewSeries mSeries;
+    double mTimeSample = 2;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -56,16 +57,16 @@ public class DigitalFragment extends Fragment {
         GraphView.GraphViewData[] data = new GraphView.GraphViewData[2*xData.length-1];
 
         // Add actual data points
-        // 0.5*i gives time in us
+        // mTimeSample*i gives time in us
         // Bytes are unsigned, so to convert into a positive int we have to take the absolute
         // value
         for (int i=0; i<xData.length; i++) {
-            data[2*i] = new GraphView.GraphViewData(0.5*i, Math.abs((int) xData[i]));
+            data[2*i] = new GraphView.GraphViewData(mTimeSample*i, Math.abs((int) xData[i]));
         }
 
         // Add data points after for all except last point
         for (int i=0; i<xData.length-1; i++) {
-            data[2*i+1] = new GraphView.GraphViewData(0.5*(i+1)-ghost, Math.abs((int) xData[i]));
+            data[2*i+1] = new GraphView.GraphViewData(mTimeSample*(i+1)-ghost, Math.abs((int) xData[i]));
         }
         mSeries.resetData(data);
     }
@@ -84,5 +85,9 @@ public class DigitalFragment extends Fragment {
             throw new ClassCastException(activity.toString()
                     + " must implement OnDigitalActionInterface");
         }
+    }
+
+    public void setTimeSample(double timeSample) {
+        mTimeSample = timeSample;
     }
 }

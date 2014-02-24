@@ -3,6 +3,7 @@
 
 #include "USBUSART.h"
 #include "Command.h"
+#include "Global.h"
 #include "Debugger.h"
 #include "Pots.h"
 #include "Sampler.h"
