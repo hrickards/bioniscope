@@ -23,9 +23,16 @@ void ADCSetup(void) {
 
 // Operating in pipelined mode
 // TODO Operate in a faster mode
-Byte ADCSample(void) {
+Byte ADCSample(char address) {
+  // Set address of the ADC
+  if (address == 0xFF) {
+    PORTB |= ADDR;
+  } else {
+    PORTB &= ~ADDR;
+  }
+
   // Pull CS, RD and WR low
-  PORTB &= ~CS & ~RD & ~WR & ~ADDR;
+  PORTB &= ~CS & ~RD & ~WR;
 
   // Small delay to let the ADC gather the data
   _delay_us(5);
@@ -34,7 +41,7 @@ Byte ADCSample(void) {
   Byte sample = PINC;
 
   // Pull CS, RD and WR back high
-  PORTB |= CS | RD | WR | ADDR;
+  PORTB |= CS | RD | WR;
 
   return sample;
 }

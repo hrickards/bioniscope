@@ -5,7 +5,8 @@
 
 // Sample registers
 Byte DigitalSamples[NUM_SAMPLES];
-Byte AnalogueSamples[NUM_SAMPLES];
+Byte AnalogueSamplesA[NUM_SAMPLES];
+Byte AnalogueSamplesB[NUM_SAMPLES];
 
 void SamplerSetup(void) {
   // Ensure digital input pins are inputs
@@ -41,6 +42,7 @@ void SamplerSample(void) {
 
   // Take analogue samples using the functions in ADC.c
   for (i=0; i<NUM_SAMPLES; i++) {
-    AnalogueSamples[i] = ADCSample();
+    AnalogueSamplesA[i] = ADCSample(0x00);
+    AnalogueSamplesB[i] = ADCSample(0xFF);
   }
 }

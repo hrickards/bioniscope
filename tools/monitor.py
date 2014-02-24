@@ -41,8 +41,7 @@ while True:
         time_delay = int(0)
         command(0x06, [time_delay>>8, time_delay&0xFF])
 
-        data = command(0x00, [])
-        print "COM: " + aformat(data)
+        print aformat([command(0x00, [])[10], command(0x01, [])[10]])
         # plot_data(data, time_delay)
     ##if bt: print "COM: " + aformat(command(0x08, [0xFF]))
     ##if bt: print "COM: " + aformat(command(0x08, [0x7F]))

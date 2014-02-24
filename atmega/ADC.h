@@ -1,4 +1,4 @@
 #include "Global.h"
 
 void ADCSetup(void);
-Byte ADCSample(void);
+Byte ADCSample(Byte address);
