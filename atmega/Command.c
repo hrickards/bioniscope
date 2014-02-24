@@ -70,6 +70,11 @@ void CommandRun(void) {
       for (i=0; i<NUM_SAMPLES; i++) { BTUSARTTransmit(DigitalSamples[i]); }
       break;
 
+    // Return analogue samples
+    case 0x00:
+      for (i=0; i<NUM_SAMPLES; i++) { BTUSARTTransmit(AnalogueSamples[i]); }
+      break;
+
     // Set time delay between samples
     case 0x06:
       TimeDelay = (Data1 << 8) | Data2;

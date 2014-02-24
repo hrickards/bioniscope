@@ -12,7 +12,7 @@ int main(void) {
   // Setup the command interface (Bluetooth)
   CommandSetup();
   // Setup the debugging interface (USB)
-  DebuggerSetup();
+  // DebuggerSetup();
 
   // Setup potentiometer control interface
   PotsSetup();
@@ -25,15 +25,15 @@ int main(void) {
 
   // Loop forever
   while(1) {
-	// Respond to commands
-	CommandRun();
+    // Take samples
+    SamplerSample();
 
-	// Take samples
-	SamplerSample();
+    // Respond to commands
+    CommandRun();
 
-	// Send any debugging info over USB
-	DebuggerRun();
+    // Send any debugging info over USB
+    // DebuggerRun();
 
-	_delay_ms(100);
+    _delay_ms(10);
   }
 }

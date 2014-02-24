@@ -38,17 +38,17 @@ def plot_data(data, time_delay):
 
 while True:
     if bt:
-        time_delay = int(100)
+        time_delay = int(0)
         command(0x06, [time_delay>>8, time_delay&0xFF])
 
-        command(0x0D, [])
-        data = command(0x02, [])
+        data = command(0x00, [])
         print "COM: " + aformat(data)
-        data = [x>>7 for x in data[:-1]]
-        print data
-        plot_data(data, time_delay)
+        # plot_data(data, time_delay)
     ##if bt: print "COM: " + aformat(command(0x08, [0xFF]))
     ##if bt: print "COM: " + aformat(command(0x08, [0x7F]))
 
     # Get deubgging info
-    if usb: print "DBG: " + aformat(debug())
+    if usb:
+        print aformat(debug())
+        # for datum in debug():
+            # print("{0:08b}".format(datum)),

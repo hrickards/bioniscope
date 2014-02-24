@@ -78,7 +78,7 @@ PROJECTNAME=bioniscope
 # Use .cc, .cpp or .C suffix for C++ files, use .S 
 # (NOT .s !!!) for assembly source code files.
 PRJSRC=main.c USBUSART.c BTUSART.c Command.c Debugger.c Pots.c\
-	   SPI.c Sampler.c Global.c
+	   SPI.c Sampler.c Global.c ADC.c
 
 # additional includes (e.g. -I/path/to/mydir)
 INC=
@@ -88,7 +88,7 @@ LIBS=
 
 # Optimization level, 
 # use s (size opt), 1, 2, 3 or 0 (off)
-OPTLEVEL=s
+OPTLEVEL=3
 
 
 #####      AVR Dude 'writeflash' options       #####

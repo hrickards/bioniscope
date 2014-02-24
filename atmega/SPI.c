@@ -30,7 +30,7 @@ static void SPIWriteByte(Byte data) {
     if (data & 0x80) {
 	  PORTD |= DATA;
     } else {
-	  PORTD &= DATA;
+	  PORTD &= ~DATA;
     }
 
     // Cycle clock
