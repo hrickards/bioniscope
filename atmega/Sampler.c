@@ -8,6 +8,8 @@ Byte DigitalSamples[NUM_SAMPLES];
 Byte AnalogueSamplesA[NUM_SAMPLES];
 Byte AnalogueSamplesB[NUM_SAMPLES];
 
+#define DIGITAL_THRESHOLD 100
+
 void SamplerSetup(void) {
   // Ensure digital input pins are inputs
   DDRA = 0x00;
@@ -26,7 +28,18 @@ void delay_us(int num) {
 
 // TODO Faster for small time delays
 void SamplerSample(void) {
-  int i;
+  int i = 0;
+  // Take samples until the signal rises from below the threshold to above the threshold
+  // Take up to 10*NUM_SAMPLES samples
+  Byte previousSample = 0xFF;
+  Byte currentSample = 0x00;
+  while(!(currentSample > 0x80 && previousSample < 0x80) && i<10*NUM_SAMPLES) {
+    previousSample = currentSample;
+    currentSample = PINA;
+    _delay_us(1);
+    i++;
+  }
+
   if (TimeDelay<2) {
     // Take digital samples just as inputs to PORTA
     for (i=0; i<NUM_SAMPLES; i++) {
