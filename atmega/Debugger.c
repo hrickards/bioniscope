@@ -10,8 +10,6 @@ void DebuggerSetup(void) {
 
 // Called repeatedly to do some form of debugging
 void DebuggerRun(void) {
-  // Return 0x00 then a newline
-  USBUSARTTransmit(0x00);
   int i;
   for (i=0; i<NUM_SAMPLES; i++) { USBUSARTTransmit(AnalogueSamplesA[i]); }
   USBUSARTTransmit(0x0A);
