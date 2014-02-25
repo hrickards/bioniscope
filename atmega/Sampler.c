@@ -8,8 +8,6 @@ Byte DigitalSamples[NUM_SAMPLES];
 Byte AnalogueSamplesA[NUM_SAMPLES];
 Byte AnalogueSamplesB[NUM_SAMPLES];
 
-#define DIGITAL_THRESHOLD 100
-
 void SamplerSetup(void) {
   // Ensure digital input pins are inputs
   DDRA = 0x00;
@@ -33,7 +31,7 @@ void SamplerSample(void) {
   // Take up to 10*NUM_SAMPLES samples
   Byte previousSample = 0xFF;
   Byte currentSample = 0x00;
-  while(!(currentSample > 0x80 && previousSample < 0x80) && i<10*NUM_SAMPLES) {
+  while(!(currentSample > DigitalTriggerThreshold && previousSample < DigitalTriggerThreshold) && i<10*NUM_SAMPLES) {
     previousSample = currentSample;
     currentSample = PINA;
     _delay_us(1);

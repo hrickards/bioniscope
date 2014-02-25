@@ -4,4 +4,5 @@ typedef unsigned char Byte;
 #ifndef _TD_DEFINED
   #define _TD_DEFINED = 1
   extern int TimeDelay;
+  extern Byte DigitalTriggerThreshold;
 #endif

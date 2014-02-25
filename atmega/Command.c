@@ -37,6 +37,10 @@ void ReceiveCommand(void) {
       Data2 = BTUSARTRead();
       break;
 
+    // Set digital trigger threshold
+    case 0x0D:
+      Data1 = BTUSARTRead();
+
     default:
         break;
   }
@@ -88,6 +92,16 @@ void CommandRun(void) {
       // MSB first
       BTUSARTTransmit(TimeDelay >> 8);
       BTUSARTTransmit(TimeDelay & 0xFF);
+      break;
+
+    // Set the digital trigger threshold
+    case 0x0D:
+      DigitalTriggerThreshold = Data1;
+      break;
+
+    // Return the digital trigger threshold
+    case 0x0E:
+      BTUSARTTransmit(DigitalTriggerThreshold);
       break;
 
     // Return error
