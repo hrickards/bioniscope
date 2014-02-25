@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 
+import com.jjoe64.graphview.CustomLabelFormatter;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.GraphViewSeries;
 import com.jjoe64.graphview.LineGraphView;
@@ -19,7 +20,7 @@ import com.jjoe64.graphview.LineGraphView;
 public class DigitalFragment extends Fragment {
     OnDigitalActionInterface mCallback;
     GraphView mGraphView;
-    GraphViewSeries mSeries;
+    GraphViewSeries mSeries[];
     double mTimeSample = 2;
 
     @Override
@@ -33,16 +34,29 @@ public class DigitalFragment extends Fragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         mGraphView = new LineGraphView(getActivity(), getString(R.string.digital_title));
         mGraphView.getGraphViewStyle().setNumHorizontalLabels(11); // 10 horizontal divisions
-        mGraphView.getGraphViewStyle().setNumVerticalLabels(11); // 10 vertical divisions
+        mGraphView.getGraphViewStyle().setNumVerticalLabels(26); // 25 vertical divisions
         mGraphView.getGraphViewStyle().setVerticalLabelsWidth(120);
-        mGraphView.setManualYAxisBounds(256, 0);
+        mGraphView.setManualYAxisBounds(25, 0);
         mGraphView.setViewPort(0, 100);
         mGraphView.setScalable(true);
         mGraphView.setScrollable(true);
+        mGraphView.setCustomLabelFormatter(new CustomLabelFormatter() {
+            @Override
+            public String formatLabel(double value, boolean isValueX) {
+                // Only format y values
+                if (!isValueX) {
 
-        // Data series
-        mSeries = new GraphViewSeries(new GraphView.GraphViewData[] {});
-        mGraphView.addSeries(mSeries);
+                }
+                return null;
+            }
+        });
+
+        // 8 data series (one per channel)
+        mSeries = new GraphViewSeries[8];
+        for (int i=0; i<8; i++) {
+            mSeries[i] = new GraphViewSeries(new GraphView.GraphViewData[] {});
+            mGraphView.addSeries(mSeries[i]);
+        }
 
         // Show graph
         LinearLayout graphLayout = (LinearLayout) getView().findViewById(R.id.digitalGraph);
@@ -54,21 +68,27 @@ public class DigitalFragment extends Fragment {
         // TODO Do this in a less hackish way
         double ghost = 0.01;
 
+        for (int j=0; j<8; j++) {
         GraphView.GraphViewData[] data = new GraphView.GraphViewData[2*xData.length-1];
 
-        // Add actual data points
-        // mTimeSample*i gives time in us
-        // Bytes are unsigned, so to convert into a positive int we have to take the absolute
-        // value
-        for (int i=0; i<xData.length; i++) {
-            data[2*i] = new GraphView.GraphViewData(mTimeSample*i, Math.abs((int) xData[i]));
-        }
+            // Add actual data points
+            // mTimeSample*i gives time in us
+            // Bytes are unsigned, so to convert into a positive int we have to take the absolute
+            // value
+            for (int i=0; i<xData.length; i++) {
+                int xdi = xData[i];
+                int yVal = ((xdi>>j)&0x01)+j*3;
+                data[2*i] = new GraphView.GraphViewData(mTimeSample*i, yVal);
+            }
 
-        // Add data points after for all except last point
-        for (int i=0; i<xData.length-1; i++) {
-            data[2*i+1] = new GraphView.GraphViewData(mTimeSample*(i+1)-ghost, Math.abs((int) xData[i]));
+            // Add data points after for all except last point
+            for (int i=0; i<xData.length-1; i++) {
+                int xdi = xData[i];
+                int yVal = ((xdi>>j)&0x01)+j*3;
+                data[2*i+1] = new GraphView.GraphViewData(mTimeSample*(i+1)-ghost, yVal);
+            }
+            mSeries[j].resetData(data);
         }
-        mSeries.resetData(data);
     }
 
     public interface OnDigitalActionInterface {
