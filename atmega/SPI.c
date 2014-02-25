@@ -37,6 +37,7 @@ static void SPIWriteByte(Byte data) {
     PORTD |= SCLK;
     _delay_us(20);
     PORTD &= ~SCLK;
+    _delay_us(20);
 
     // Bit-shift data so we look at the next MSB next
     data <<= 1;
