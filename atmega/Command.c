@@ -60,9 +60,7 @@ void CommandRun(void) {
     // MSB ? (channel B) : (channel A)
     case 0x08:
       // PotsSet takes care of everything for us
-      // TODO Make pots work
-      // PotsSet(Data1);
-      BTUSARTTransmit(Data1);
+      PotsSet(Data1);
       break;
 
     // Return digital samples

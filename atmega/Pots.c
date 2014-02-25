@@ -1,7 +1,6 @@
 #include "Global.h"
 #include "SPI.h"
-
-static void PotsSet(Byte Control);
+#include "Pots.h"
 
 void PotsSetup(void) {
   // Setup SPI
