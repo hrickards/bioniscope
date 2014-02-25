@@ -41,6 +41,11 @@ void ReceiveCommand(void) {
     case 0x0D:
       Data1 = BTUSARTRead();
 
+    // Set type of digital trigger
+    // See Sampler.c
+    case 0x0F:
+      Data1 = BTUSARTRead();
+
     default:
         break;
   }
@@ -102,6 +107,17 @@ void CommandRun(void) {
     // Return the digital trigger threshold
     case 0x0E:
       BTUSARTTransmit(DigitalTriggerThreshold);
+      break;
+
+    // Set the type of digital trigger
+    // See Sampler.c
+    case 0x0F:
+      DigitalTriggerType = Data1;
+      break;
+
+    // Return the type of digital trigger
+    case 0x10:
+      BTUSARTTransmit(DigitalTriggerType);
       break;
 
     // Return error

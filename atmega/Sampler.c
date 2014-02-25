@@ -29,13 +29,29 @@ void SamplerSample(void) {
   int i = 0;
   // Take samples until the signal rises from below the threshold to above the threshold
   // Take up to 10*NUM_SAMPLES samples
-  Byte previousSample = 0xFF;
-  Byte currentSample = 0x00;
-  while(!(currentSample > DigitalTriggerThreshold && previousSample < DigitalTriggerThreshold) && i<10*NUM_SAMPLES) {
-    previousSample = currentSample;
-    currentSample = PINA;
-    _delay_us(1);
-    i++;
+
+  // Rising edge trigger
+  if (DigitalTriggerType == 0x00) {
+    Byte previousSample = 0xFF;
+    Byte currentSample = 0x00;
+    while(!(currentSample > DigitalTriggerThreshold && previousSample < DigitalTriggerThreshold) && i<10*NUM_SAMPLES) {
+      previousSample = currentSample;
+      currentSample = PINA;
+      _delay_us(1);
+      i++;
+    }
+  // Falling edge trigger
+  } else if (DigitalTriggerType == 0x01) {
+    Byte previousSample = 0x00;
+    Byte currentSample = 0xFF;
+    while(!(currentSample < DigitalTriggerThreshold && previousSample > DigitalTriggerThreshold) && i<10*NUM_SAMPLES) {
+      previousSample = currentSample;
+      currentSample = PINA;
+      _delay_us(1);
+      i++;
+    }
+  // Disable trigger
+  } else {
   }
 
   if (TimeDelay<2) {
