@@ -16,13 +16,15 @@ void ADCSetup(void) {
   // Output high on CS, RD, WR and ADDR
   DDRB |= CS | RD | WR | ADDR;
   PORTB |= CS | RD | WR | ADDR;
+  
+  PORTC = 0x00;
 
   // INT input
   // DDRB &= ~INT;
 }
 
 // Operating in pipelined mode
-// TODO Operate in a faster mode
+// TODO Speed up the following (aim: 2uS a sample)
 Byte ADCSample(char address) {
   // Set address of the ADC
   if (address == 0xFF) {
@@ -35,13 +37,17 @@ Byte ADCSample(char address) {
   PORTB &= ~CS & ~RD & ~WR;
 
   // Small delay to let the ADC gather the data
-  _delay_us(5);
-
-  // Take the sample
-  Byte sample = PINC;
+  // 0.25 to 10uS
+  // Minus 2 clock cycles for the IO lines
+  // Gives a minimum of approx 0.1uS
+  _delay_us(0.1);
 
   // Pull CS, RD and WR back high
   PORTB |= CS | RD | WR;
 
-  return sample;
+  // Tintl + Tid = max 545 ns
+  // _delay_us(1);
+
+  // Take the sample
+  return PINC;
 }
