@@ -21,7 +21,7 @@ int main(void) {
   SamplerSetup();
 
   // Enable interrupts
-  sei();
+  // sei();
 
   // Loop forever
   while(1) {
