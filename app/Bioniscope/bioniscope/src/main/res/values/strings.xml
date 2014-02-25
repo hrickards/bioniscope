@@ -16,4 +16,6 @@
     <string name="disconnect">Disconnect</string>
     <string name="connect">Connect</string>
     <string name="time_sample_label">Time/sample (us)</string>
+    <string name="spectrum_capture_label">Spectrum Capture</string>
+    <string name="spectrum_title">Spectrum Capture</string>
 </resources>

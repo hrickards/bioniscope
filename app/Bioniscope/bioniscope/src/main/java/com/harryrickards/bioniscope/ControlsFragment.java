@@ -95,6 +95,13 @@ public class ControlsFragment extends Fragment {
                 mCallback.onSampleRequested();
             }
         });
+        Button spectrumCaptureButton = (Button) view.findViewById(R.id.spectrumCaptureButton);
+        spectrumCaptureButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mCallback.onSpectrumSampleRequested();
+            }
+        });
     }
 
     protected void setTimeDivFromProgress(int progress) {
@@ -129,6 +136,7 @@ public class ControlsFragment extends Fragment {
         public void onTraceTwoVoltsDivChanged(double value);
         public void onTimeDivChanged(double value);
         public void onSampleRequested();
+        public void onSpectrumSampleRequested();
     }
 
     // Methods to set controls based on activity values

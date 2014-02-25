@@ -16,12 +16,20 @@
         android:id="@+id/captureButton"
         />
 
+    <Button
+        android:layout_width="250dp"
+        android:layout_height="50dp"
+        android:text="@string/spectrum_capture_label"
+        android:id="@+id/spectrumCaptureButton"
+        />
+
     <com.harryrickards.bioniscope.TraceControlView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/traceOne"
+        android:layout_marginTop="15dp"
         custom:traceId="1"
-        />3
+        />
 
     <com.harryrickards.bioniscope.TraceControlView
         android:layout_width="match_parent"

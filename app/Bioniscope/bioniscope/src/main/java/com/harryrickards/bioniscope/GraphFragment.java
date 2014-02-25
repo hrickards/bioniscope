@@ -1,5 +1,6 @@
 package com.harryrickards.bioniscope;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -48,6 +49,8 @@ public class GraphFragment extends Fragment {
         // Data series
         mSeriesA = new GraphViewSeries(new GraphView.GraphViewData[] {});
         mSeriesB = new GraphViewSeries(new GraphView.GraphViewData[] {});
+        mSeriesA.getStyle().color = Color.BLUE;
+        mSeriesB.getStyle().color = Color.GREEN;
         mGraphView.addSeries(mSeriesA);
         mGraphView.addSeries(mSeriesB);
 

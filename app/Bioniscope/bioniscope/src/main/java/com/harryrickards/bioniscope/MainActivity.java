@@ -1,10 +1,9 @@
 package com.harryrickards.bioniscope;
 
-import android.app.FragmentManager;
+
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.AsyncTask;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.bluetooth.BluetoothAdapter;
@@ -32,8 +31,7 @@ import java.util.UUID;
 public class MainActivity extends ActionBarActivity implements OnNavigationListener,
         ControlsFragment.OnControlChangedListener,
         DigitalControlsFragment.OnDigitalControlChangedListener,
-        DigitalFragment.OnDigitalActionInterface,
-        SpectrumControlsFragment.OnSpectrumControlChangedListener {
+        DigitalFragment.OnDigitalActionInterface {
 
     // Bluetooth
     BluetoothAdapter mBluetoothAdapter;
@@ -136,20 +134,6 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
         } else {
             // Connect to bluetooth device in a background thread
             new ConnectBluetoothTask().execute();
-
-            // TODO Remove
-            // Send sample data
-            /*
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    while(!Thread.currentThread().isInterrupted()) {
-                        runCommand(new Command((byte) 0x13, new byte[]{0x05, 0x08}, 3));
-                        try { Thread.sleep(1000); } catch (InterruptedException e) { e.printStackTrace(); }
-                    }
-                }
-            }).start();
-            */
         }
     }
 
@@ -339,24 +323,24 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
     public void onTraceOneVoltsDivChanged(double value) {
         traceOneVoltsDiv = value;
         // Update y bounds of graph
-        updateGraphYBounds();
+        // updateGraphYBounds();
     }
     public void onTraceTwoVoltsDivChanged(double value) {
         traceTwoVoltsDiv = value;
         // Update y bounds of graph
-        updateGraphYBounds();
+        // updateGraphYBounds();
     }
     public void onTimeDivChanged(double value) {
         timeDiv = value;
     }
 
-    public void updateGraphYBounds() {
+    //public void updateGraphYBounds() {
         // Use the maximum volts/div out of traces one and two
-        double voltsDiv = (traceOneVoltsDiv > traceTwoVoltsDiv) ? traceOneVoltsDiv : traceTwoVoltsDiv;
-        if (mGraphFragment != null && currentFragment == GRAPH_FRAGMENT) {
+        //double voltsDiv = (traceOneVoltsDiv > traceTwoVoltsDiv) ? traceOneVoltsDiv : traceTwoVoltsDiv;
+       // if (mGraphFragment != null && currentFragment == GRAPH_FRAGMENT) {
             //mGraphFragment.setYBounds(-voltsDiv*10, voltsDiv*10);
-        }
-    }
+       // }
+    //}
 
     // Set values of controls
     /*public void setControls() {
@@ -385,7 +369,7 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
         transaction.addToBackStack(null);
         transaction.commit();
 
-        updateGraphYBounds();
+        // updateGraphYBounds();
     }
 
     // Switch to digital (basic logic analyser) view
@@ -414,9 +398,13 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
         if (mSpectrumFragment == null) {
             mSpectrumFragment = new SpectrumFragment();
         }
+        if (mControlsFragment == null) {
+            mControlsFragment = new ControlsFragment();
+        }
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.fragmentContainer, mSpectrumFragment);
+        transaction.replace(R.id.controlsContainer, mControlsFragment);
         transaction.addToBackStack(null);
         transaction.commit();
     }
@@ -438,13 +426,12 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
             }
         });
         runCommand(command);
-
     }
 
     // Analogue sample requested
     public void onSampleRequested() {
         // Run command to get data from channel A
-        Command command = new Command((byte) 0x00, new byte[] {}, 1024, new CommandInterface.CommandCallback() {
+        runCommand(new Command((byte) 0x00, new byte[] {}, 1024, new CommandInterface.CommandCallback() {
             public void commandFinished(byte[] data) {
                 final byte[] mData = data;
                 runOnUiThread(new Runnable() {
@@ -456,8 +443,53 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
                     }
                 });
             }
-        });
-        runCommand(command);
+        }));
+        // Run command to get data from channel B
+        runCommand(new Command((byte) 0x01, new byte[] {}, 1024, new CommandInterface.CommandCallback() {
+            public void commandFinished(byte[] data) {
+                final byte[] mData = data;
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mGraphFragment != null) {
+                            mGraphFragment.setData(mData, true);
+                        }
+                    }
+                });
+            }
+        }));
+    }
+
+    // Spectrum sample requested
+    public void onSpectrumSampleRequested() {
+        // Run command to get data from channel A
+        runCommand(new Command((byte) 0x00, new byte[] {}, 1024, new CommandInterface.CommandCallback() {
+            public void commandFinished(byte[] data) {
+                final byte[] mData = data;
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mSpectrumFragment != null) {
+                            mSpectrumFragment.setData(mData, false);
+                        }
+                    }
+                });
+            }
+        }));
+        // Run command to get data from channel B
+        runCommand(new Command((byte) 0x01, new byte[] {}, 1024, new CommandInterface.CommandCallback() {
+            public void commandFinished(byte[] data) {
+                final byte[] mData = data;
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mSpectrumFragment != null) {
+                            mSpectrumFragment.setData(mData, true);
+                        }
+                    }
+                });
+            }
+        }));
     }
 
     public void onDigitalTimeSampleChanged(double timeSample) {
