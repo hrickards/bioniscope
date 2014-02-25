@@ -441,6 +441,25 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
 
     }
 
+    // Analogue sample requested
+    public void onSampleRequested() {
+        // Run command to get data from channel A
+        Command command = new Command((byte) 0x00, new byte[] {}, 1024, new CommandInterface.CommandCallback() {
+            public void commandFinished(byte[] data) {
+                final byte[] mData = data;
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mGraphFragment != null) {
+                            mGraphFragment.setData(mData, false);
+                        }
+                    }
+                });
+            }
+        });
+        runCommand(command);
+    }
+
     public void onDigitalTimeSampleChanged(double timeSample) {
         if (mDigitalFragment != null) {
             mDigitalFragment.setTimeSample(timeSample);

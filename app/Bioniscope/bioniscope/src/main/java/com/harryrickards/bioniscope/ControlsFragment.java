@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.SeekBar;
@@ -85,6 +86,15 @@ public class ControlsFragment extends Fragment {
         });
         timeDivPeriod = (TextView) getView().findViewById(R.id.timeDivPeriod);
         timeDivFrequency = (TextView) getView().findViewById(R.id.timeDivFrequency);
+
+        // Button to sample
+        Button captureButton = (Button) view.findViewById(R.id.captureButton);
+        captureButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mCallback.onSampleRequested();
+            }
+        });
     }
 
     protected void setTimeDivFromProgress(int progress) {
@@ -118,6 +128,7 @@ public class ControlsFragment extends Fragment {
         public void onTraceOneVoltsDivChanged(double value);
         public void onTraceTwoVoltsDivChanged(double value);
         public void onTimeDivChanged(double value);
+        public void onSampleRequested();
     }
 
     // Methods to set controls based on activity values
