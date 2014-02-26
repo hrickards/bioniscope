@@ -18,4 +18,6 @@
     <string name="time_sample_label">Time/sample (us)</string>
     <string name="spectrum_capture_label">Spectrum Capture</string>
     <string name="spectrum_title">Spectrum Capture</string>
+    <string name="first_run_title">Bluetooth Communication</string>
+    <string name="first_run_body">Please follow the on-screen prompts to enable Bluetooth and pair with the Bioniscope. If prompted, enter 1234 as the PIN.</string>
 </resources>

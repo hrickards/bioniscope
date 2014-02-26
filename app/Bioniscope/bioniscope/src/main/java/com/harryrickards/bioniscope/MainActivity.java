@@ -1,6 +1,8 @@
 package com.harryrickards.bioniscope;
 
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.AsyncTask;
@@ -94,6 +96,17 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
             }
         });
 
+
+        // Show an info message about Bluetooth on the app's first run
+        // Based on SO7562786
+        boolean firstRun = getSharedPreferences("PREFERENCE", MODE_PRIVATE).getBoolean("firstRun", true);
+        if (firstRun) {
+            getSharedPreferences("PREFERENCE", MODE_PRIVATE)
+                    .edit()
+                    .putBoolean("firstRun", false)
+                    .commit();
+        }
+
         // Check device has bluetooth and get bluetooth adapter
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBluetoothAdapter == null) {
@@ -104,8 +117,20 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
             intent.addCategory(Intent.CATEGORY_HOME);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
+        } else if (firstRun) {
+            // Show the dialog asking the user to enable bluetooth before setting up bluetooth
+            AlertDialog dialog = new AlertDialog.Builder(this)
+                    .setTitle(getString(R.string.first_run_title))
+                    .setMessage(getString(R.string.first_run_body))
+                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            // Called when okay pressed
+                            setupBluetooth();
+                        }
+                    }).show();
         } else {
-            // Setup bluetooth connection
+            // Setup bluetooth connection straight away
             setupBluetooth();
         }
     }
