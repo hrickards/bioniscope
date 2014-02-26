@@ -110,6 +110,12 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
         }
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        disconnectBluetooth();
+    }
+
     private  void setupBluetooth() {
         // Set status text to connecting
         connectionStatus.setText(getString(R.string.connecting));
