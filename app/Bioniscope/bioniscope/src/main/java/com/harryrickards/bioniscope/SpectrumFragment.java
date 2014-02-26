@@ -25,19 +25,22 @@ public class SpectrumFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        Log.w("spectrum", "onCreateView");
         // Inflate layout for fragment
         return inflater.inflate(R.layout.spectrum_fragment, container, false);
     }
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
+        Log.w("spectrum", "onViewCreated");
         mGraphView = new LineGraphView(getActivity(), getString(R.string.spectrum_title));
         mGraphView.getGraphViewStyle().setNumHorizontalLabels(11); // 10 horizontal divisions
         mGraphView.getGraphViewStyle().setNumVerticalLabels(11); // 10 vertical divisions
         mGraphView.getGraphViewStyle().setVerticalLabelsWidth(120);
-        mGraphView.setViewPort(0, 100);
-        mGraphView.setScalable(true);
-        mGraphView.setScrollable(true);
+        //mGraphView.setViewPort(0, 100);
+        //mGraphView.setScalable(true);
+        //mGraphView.setScrollable(true);
 
         // Data series
         mSeriesA = new GraphViewSeries(new GraphView.GraphViewData[] {});
@@ -65,10 +68,23 @@ public class SpectrumFragment extends Fragment {
         double[] imag = new double[timeData.length];
         Arrays.fill(imag, 0.0);
 
-        // Run the FFT and add the results to a GraphViewData array
+        // Run the FFT
         fft.fft(magnitudes, imag);
-        GraphView.GraphViewData[] data = new GraphView.GraphViewData[timeData.length];
-        for (int i=0; i<data.length; i++) { data[i] = new GraphView.GraphViewData(i, magnitudes[i]); }
+
+        // We only care about the first N/2 entries as we're only dealing with real frequencies
+        double values[] = new double[512];
+        for (int i=0; i<values.length; i++) {
+            values[i] = magnitudes[i];
+        }
+
+        // Add results to a GraphViewData array
+        GraphView.GraphViewData[] data = new GraphView.GraphViewData[values.length];
+        for (int i=0; i<data.length; i++) {
+            // f = i * Fs / N
+            // TODO Improve accuracy of Fs
+            double frequency = i*180000.0/1024.0;
+            data[i] = new GraphView.GraphViewData(frequency, values[i]);
+        }
 
         // Add data to the series
         GraphViewSeries series;

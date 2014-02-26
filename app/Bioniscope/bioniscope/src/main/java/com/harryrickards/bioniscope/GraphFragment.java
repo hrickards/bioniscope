@@ -22,6 +22,7 @@ public class GraphFragment extends Fragment {
     GraphView mGraphView;
     GraphViewSeries mSeriesA;
     GraphViewSeries mSeriesB;
+    double timeSample;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -36,6 +37,8 @@ public class GraphFragment extends Fragment {
     }
 
     protected void setupGraph() {
+        timeSample = 1;
+
         // Initiate GraphView
         mGraphView = new LineGraphView(getActivity(), "Bioniscope");
         mGraphView.getGraphViewStyle().setNumHorizontalLabels(21); // 20 horizontal divisions
@@ -88,7 +91,7 @@ public class GraphFragment extends Fragment {
         for (int i=0; i<xData.length; i++) {
             // Bytes are unsigned, so to convert into a positive int we have to take the absolute
             // value
-            data[i] = new GraphView.GraphViewData(i, Math.abs((int) xData[i]));
+            data[i] = new GraphView.GraphViewData(i*timeSample, Math.abs((int) xData[i]));
         }
 
         // Get the series to add the data to
@@ -99,5 +102,9 @@ public class GraphFragment extends Fragment {
             series = mSeriesA;
         }
         series.resetData(data);
+    }
+
+    public void setTimeSample(double mTimeSample) {
+        timeSample = mTimeSample;
     }
 }

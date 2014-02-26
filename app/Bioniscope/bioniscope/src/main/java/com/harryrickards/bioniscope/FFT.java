@@ -30,6 +30,9 @@ public class FFT {
 
     }
 
+    // x holds the input data, y should be prefilled with zeros
+    // at the end x will hold the magnitudes and y the imaginary parts (arguments not calculated
+    // as they're not needed here)
     public void fft(double[] x, double[] y) {
         int i, j, k, n1, n2, a;
         double c, s, t1, t2;

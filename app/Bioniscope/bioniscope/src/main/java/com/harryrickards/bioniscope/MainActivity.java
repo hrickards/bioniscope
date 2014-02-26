@@ -41,19 +41,6 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
     InputStream mInputStream;
     BluetoothSocket mSocket;
 
-    boolean traceOneEnabled;
-    boolean traceTwoEnabled;
-    double traceOneVoltsDiv;
-    double traceTwoVoltsDiv;
-    double timeDiv; // Is really frequency (to reduce rounding errors)
-
-    // For savedInstanceState
-    static final String TRACE_ONE_ENABLED = "traceOneEnabled";
-    static final String TRACE_TWO_ENABLED = "traceTwoEnabled";
-    static final String TRACE_ONE_VOLTS_DIV = "traceOneVoltsDiv";
-    static final String TRACE_TWO_VOLTS_DIV = "traceTwoVoltsDiv";
-    static final String TIME_DIV = "timeDiv";
-
     TextView connectionStatus;
     Button disconnectButton;
 
@@ -256,7 +243,6 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
     // Called when dropdown navigation pressed
     @Override
     public boolean onNavigationItemSelected(int position, long itemId) {
-        currentFragment = position;
         switch(position) {
             case GRAPH_FRAGMENT:    switchToGraph();
                                     break;
@@ -266,11 +252,14 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
                                     break;
             default:                break;
         }
+        // Set after the switchToX call
+        currentFragment = position;
         return false;
     }
 
     // Save controls permanently & in current app instance (persistent across rotation)
     // Based on SO#151777
+    /*
     @Override
     protected void onPause() {
         super.onPause();
@@ -287,6 +276,7 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
 
         editor.commit();
     }
+
 
     // SharedPreferences doesn't support doubles by default, hence these workarounds
     // Copied from copolli @ SO 16319237
@@ -333,6 +323,7 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
     public void onTimeDivChanged(double value) {
         timeDiv = value;
     }
+    */
 
     //public void updateGraphYBounds() {
         // Use the maximum volts/div out of traces one and two
@@ -363,11 +354,17 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
             mControlsFragment = new ControlsFragment();
         }
 
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragmentContainer, mGraphFragment);
-        transaction.replace(R.id.controlsContainer, mControlsFragment);
-        transaction.addToBackStack(null);
-        transaction.commit();
+        FragmentTransaction transaction1 = getSupportFragmentManager().beginTransaction();
+        transaction1.replace(R.id.fragmentContainer, mGraphFragment);
+        transaction1.addToBackStack(null);
+        transaction1.commit();
+
+        if (!(currentFragment == GRAPH_FRAGMENT || currentFragment == SPECTRUM_FRAGMENT)) {
+            FragmentTransaction transaction2 = getSupportFragmentManager().beginTransaction();
+            transaction2.replace(R.id.controlsContainer, mControlsFragment);
+            transaction2.addToBackStack(null);
+            transaction2.commit();
+        }
 
         // updateGraphYBounds();
     }
@@ -397,16 +394,23 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
     public void switchToSpectrum() {
         if (mSpectrumFragment == null) {
             mSpectrumFragment = new SpectrumFragment();
+            Log.w("scope", "new spec fragment");
         }
         if (mControlsFragment == null) {
             mControlsFragment = new ControlsFragment();
         }
 
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragmentContainer, mSpectrumFragment);
-        transaction.replace(R.id.controlsContainer, mControlsFragment);
-        transaction.addToBackStack(null);
-        transaction.commit();
+        FragmentTransaction transaction1 = getSupportFragmentManager().beginTransaction();
+        transaction1.replace(R.id.fragmentContainer, mSpectrumFragment);
+        transaction1.addToBackStack(null);
+        transaction1.commit();
+
+        if (!(currentFragment == GRAPH_FRAGMENT || currentFragment == SPECTRUM_FRAGMENT)) {
+            FragmentTransaction transaction2 = getSupportFragmentManager().beginTransaction();
+            transaction2.replace(R.id.controlsContainer, mControlsFragment);
+            transaction2.addToBackStack(null);
+            transaction2.commit();
+        }
     }
 
     // Digital sample requested
@@ -430,54 +434,63 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
 
     // Analogue sample requested
     public void onSampleRequested() {
-        // Run command to get data from channel A
-        runCommand(new Command((byte) 0x00, new byte[] {}, 1024, new CommandInterface.CommandCallback() {
+        if (mControlsFragment != null && mControlsFragment.traceOneEnabled()) {
+            // Run command to get data from channel A
+            runCommand(new Command((byte) 0x00, new byte[] {}, 1024, new CommandInterface.CommandCallback() {
             public void commandFinished(byte[] data) {
-                final byte[] mData = data;
-                runOnUiThread(new Runnable() {
+                    final byte[] mData = data;
+                    runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        if (mGraphFragment != null) {
-                            mGraphFragment.setData(mData, false);
+                            if (mGraphFragment != null) {
+                                mGraphFragment.setData(mData, false);
+                            }
                         }
-                    }
                 });
-            }
+                }
         }));
-        // Run command to get data from channel B
-        runCommand(new Command((byte) 0x01, new byte[] {}, 1024, new CommandInterface.CommandCallback() {
+        }
+
+        if (mControlsFragment != null && mControlsFragment.traceTwoEnabled()) {
+            // Run command to get data from channel B
+            runCommand(new Command((byte) 0x01, new byte[] {}, 1024, new CommandInterface.CommandCallback() {
             public void commandFinished(byte[] data) {
-                final byte[] mData = data;
-                runOnUiThread(new Runnable() {
+                    final byte[] mData = data;
+                    runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        if (mGraphFragment != null) {
-                            mGraphFragment.setData(mData, true);
+                            if (mGraphFragment != null) {
+                                mGraphFragment.setData(mData, true);
+                            }
                         }
-                    }
                 });
-            }
+                }
         }));
+        }
     }
 
     // Spectrum sample requested
     public void onSpectrumSampleRequested() {
-        // Run command to get data from channel A
-        runCommand(new Command((byte) 0x00, new byte[] {}, 1024, new CommandInterface.CommandCallback() {
+        if (mControlsFragment != null && mControlsFragment.traceOneEnabled()) {
+            // Run command to get data from channel A
+            runCommand(new Command((byte) 0x00, new byte[] {}, 1024, new CommandInterface.CommandCallback() {
             public void commandFinished(byte[] data) {
-                final byte[] mData = data;
-                runOnUiThread(new Runnable() {
+                    final byte[] mData = data;
+                    runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        if (mSpectrumFragment != null) {
-                            mSpectrumFragment.setData(mData, false);
+                            if (mSpectrumFragment != null) {
+                                mSpectrumFragment.setData(mData, false);
+                            }
                         }
-                    }
                 });
-            }
+                }
         }));
-        // Run command to get data from channel B
-        runCommand(new Command((byte) 0x01, new byte[] {}, 1024, new CommandInterface.CommandCallback() {
+        }
+
+        if (mControlsFragment != null && mControlsFragment.traceTwoEnabled()) {
+            // Run command to get data from channel B
+            runCommand(new Command((byte) 0x01, new byte[] {}, 1024, new CommandInterface.CommandCallback() {
             public void commandFinished(byte[] data) {
                 final byte[] mData = data;
                 runOnUiThread(new Runnable() {
@@ -488,8 +501,9 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
                         }
                     }
                 });
-            }
+                }
         }));
+        }
     }
 
     public void onDigitalTimeSampleChanged(double timeSample) {
@@ -512,4 +526,47 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
         });
         runCommand(command);
     }
+
+    public void onTimeSampleChanged(double timeSample) {
+        if (mGraphFragment != null) {
+            mGraphFragment.setTimeSample(timeSample);
+        }
+
+        Log.w("analogue time sample", Double.toString(timeSample));
+        int timeDelay = (int) Math.floor(timeSample);
+        if (timeDelay < 0) { timeDelay = 0; }
+        Log.w("analogue time delay", Integer.toString(timeDelay));
+
+        // Set time
+        byte[] commandData = new byte[] {(byte) ((byte)timeDelay>>8), (byte) ((byte)timeDelay&0xFF)};
+        Log.w("analogue time delay bytes", CommandInterface.bytesToHex(commandData));
+        Command command = new Command((byte) 0x11, commandData, 0, new CommandInterface.CommandCallback() {
+            public void commandFinished(byte[] data) {
+                onSampleRequested();
+            }
+        });
+        runCommand(command);
+    }
+
+    protected void onRelevantAnalogSampleRequested() {
+        switch (currentFragment) {
+            case GRAPH_FRAGMENT:
+                onSampleRequested();
+                break;
+
+            case SPECTRUM_FRAGMENT:
+                onSpectrumSampleRequested();
+                break;
+        }
+    }
+
+    // TODO Toggle capturing the channels when we're not displaying them
+    // We don't need to capture these here as we just call mControlsFragment.traceXEnabled() when
+    // needed
+    public void onTraceOneToggled(boolean value) {onRelevantAnalogSampleRequested();};
+    public void onTraceTwoToggled(boolean value) {onRelevantAnalogSampleRequested();};
+
+    // TODO Implement
+    public void onTraceOneVoltsDivChanged(double value) {};
+    public void onTraceTwoVoltsDivChanged(double value) {};
 }

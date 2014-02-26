@@ -54,7 +54,7 @@ void SamplerSample(void) {
   } else {
   }
 
-  if (TimeDelay<2) {
+  if (DigitalTimeDelay<2) {
     // Take digital samples just as inputs to PORTA
     for (i=0; i<NUM_SAMPLES; i++) {
       DigitalSamples[i] = PINA;
@@ -63,7 +63,7 @@ void SamplerSample(void) {
     // Take digital samples just as inputs to PORTA
     for (i=0; i<NUM_SAMPLES; i++) {
       DigitalSamples[i] = PINA;
-      delay_us(TimeDelay);
+      delay_us(DigitalTimeDelay);
     }
   }
 
@@ -71,5 +71,6 @@ void SamplerSample(void) {
   for (i=0; i<NUM_SAMPLES; i++) {
     AnalogueSamplesA[i] = ADCSample(0x00);
     AnalogueSamplesB[i] = ADCSample(0xFF);
+    delay_us(AnalogueTimeDelay);
   }
 }

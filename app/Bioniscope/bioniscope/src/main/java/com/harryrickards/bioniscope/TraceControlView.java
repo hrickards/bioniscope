@@ -43,6 +43,7 @@ public class TraceControlView extends LinearLayout {
 
         // Call interface methods when checkbox toggled or slider moved
         toggle = (CheckBox) findViewById(R.id.traceToggle);
+        toggle.setChecked(true); // Default to checked
         toggle.setOnClickListener(new OnClickListener() {
             // Only called when toggled by user
             @Override
@@ -107,6 +108,11 @@ public class TraceControlView extends LinearLayout {
         if (!fromUser) {
             toggle.setChecked(enabled);
         }
+    }
+
+    // Check if enabled
+    protected boolean traceEnabled() {
+        return toggle.isChecked();
     }
 
     // Interface for when trace controls (e.g. volts/div) change

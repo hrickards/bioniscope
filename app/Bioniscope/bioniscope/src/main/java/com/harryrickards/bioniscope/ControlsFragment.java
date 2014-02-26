@@ -24,10 +24,10 @@ public class ControlsFragment extends Fragment {
     OnControlChangedListener mCallback;
     TraceControlView traceOne;
     TraceControlView traceTwo;
-    double frequency;
     TextView timeDivFrequency;
     TextView timeDivPeriod;
     SeekBar timeDivSlider;
+    double timeSample;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -81,7 +81,7 @@ public class ControlsFragment extends Fragment {
             // When user has finished sliding the seekbar, call interface
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                mCallback.onTimeDivChanged(getTimeDiv());
+                mCallback.onTimeSampleChanged(getTimeDiv());
             }
         });
         timeDivPeriod = (TextView) getView().findViewById(R.id.timeDivPeriod);
@@ -108,25 +108,27 @@ public class ControlsFragment extends Fragment {
         // We actually store frequency due to rounding errors
         // Reduce from 0 to 100 to 1 to 5 (1+progress/25
         // Raise 10 to above to get 10 to 100k
-        setTimeDiv(Math.pow(10, 1 + ((double) progress) / 25), true);
+        //setTimeDiv(Math.pow(10, 1 + ((double) progress) / 25), true);
+        setTimeDiv(progress+1, true);
     }
 
-    // Note: the double argument is frequency, not time/div to reduce rounding errors
-    protected void setTimeDiv(double mFrequency, boolean fromUser) {
-        frequency = mFrequency;
-        timeDivPeriod.setText(SI.formatSI(1 / frequency)+"s");
-        timeDivFrequency.setText(SI.formatSI(frequency)+"Hz");
+    protected void setTimeDiv(double mTimeSample, boolean fromUser) {
+        //frequency = mFrequency;
+        timeSample = mTimeSample;
+        timeDivPeriod.setText(Double.toString(timeSample)+"us");
+        timeDivFrequency.setText(SI.formatSI(1000.0/timeSample)+"kHz");
 
         // Move seekbar to right position if updated programmatically
         if (!fromUser) {
             // Inverse of f=10^(1+p/25) is 25*(log10(f)-1)
-            int progress = (int) (25*(Math.log10(frequency)-1));
-            timeDivSlider.setProgress(progress);
+            //int progress = (int) (25*(Math.log10(frequency)-1));
+            //timeDivSlider.setProgress(progress);
+            timeDivSlider.setProgress((int) mTimeSample-1);
         }
     }
-    // Really returns frequency
+
     protected double getTimeDiv() {
-        return frequency;
+        return timeSample;
     }
 
     public interface OnControlChangedListener {
@@ -134,7 +136,7 @@ public class ControlsFragment extends Fragment {
         public void onTraceTwoToggled(boolean enabled);
         public void onTraceOneVoltsDivChanged(double value);
         public void onTraceTwoVoltsDivChanged(double value);
-        public void onTimeDivChanged(double value);
+        public void onTimeSampleChanged(double value);
         public void onSampleRequested();
         public void onSpectrumSampleRequested();
     }
@@ -168,4 +170,8 @@ public class ControlsFragment extends Fragment {
                     + " must implement OnControlChangedListener");
         }
     }
+
+    public boolean traceOneEnabled() {return traceOne.traceEnabled();}
+    public boolean traceTwoEnabled() {return traceTwo.traceEnabled();}
+
 }

@@ -9,10 +9,6 @@ Byte Command  = 0x0A; // Most recently received command
 Byte Data1	  = 0x00; // First optional data byte sent with Command
 Byte Data2	  = 0x00; // Second optional data byte sent with Command
 
-// Time delay between samples
-// int is 2 bytes
-// int TimeDelay;
-
 // Setup command interface
 void CommandSetup(void) {
   // Initialise bluetooth
@@ -31,7 +27,7 @@ void ReceiveCommand(void) {
       Data1 = BTUSARTRead();
       break;
 
-    // Set time delay between samples
+    // Set time delay between digital samples
     case 0x06:
       Data1 = BTUSARTRead();
       Data2 = BTUSARTRead();
@@ -45,6 +41,12 @@ void ReceiveCommand(void) {
     // See Sampler.c
     case 0x0F:
       Data1 = BTUSARTRead();
+
+    // Set time delay between analogue samples
+    case 0x11:
+      Data1 = BTUSARTRead();
+      Data2 = BTUSARTRead();
+      break;
 
     default:
         break;
@@ -87,17 +89,31 @@ void CommandRun(void) {
       for (i=0; i<NUM_SAMPLES; i++) { BTUSARTTransmit(AnalogueSamplesB[i]); }
       break;
 
-    // Set time delay between samples
+    // Set time delay between digital samples
     case 0x06:
-      TimeDelay = (Data1 << 8) | Data2;
+      DigitalTimeDelay = (Data1 << 8) | Data2;
       break;
 
-    // Return the time delay
+    // Return the digital time delay
     case 0x0C:
       // MSB first
-      BTUSARTTransmit(TimeDelay >> 8);
-      BTUSARTTransmit(TimeDelay & 0xFF);
+      BTUSARTTransmit(DigitalTimeDelay >> 8);
+      BTUSARTTransmit(DigitalTimeDelay & 0xFF);
       break;
+
+    // Set analogue time delay
+    case 0x11:
+      AnalogueTimeDelay = (Data1 << 8) | Data2;
+      break;
+
+    // Return the analogue time delay
+    case 0x12:
+      // MSB first
+      BTUSARTTransmit(AnalogueTimeDelay >> 8);
+      BTUSARTTransmit(AnalogueTimeDelay & 0xFF);
+      break;
+
+
 
     // Set the digital trigger threshold
     case 0x0D:
