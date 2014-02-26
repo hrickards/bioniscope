@@ -566,7 +566,48 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
     public void onTraceOneToggled(boolean value) {onRelevantAnalogSampleRequested();};
     public void onTraceTwoToggled(boolean value) {onRelevantAnalogSampleRequested();};
 
-    // TODO Implement
-    public void onTraceOneVoltsDivChanged(double value) {};
-    public void onTraceTwoVoltsDivChanged(double value) {};
+    public void onTraceOneVoltsDivChanged(double value) {
+        // Calculate pot byte to send
+        byte mByte = gainToPotValue(500e-3/value, false);
+        Log.w("pot A byte", CommandInterface.bytesToHex(new byte[] {mByte}));
+
+        runCommand(new Command((byte) 0x08, new byte[] {mByte}, 0, new CommandInterface.CommandCallback() {
+            @Override
+            public void commandFinished(byte[] data) {
+            }
+        }));
+    };
+    public void onTraceTwoVoltsDivChanged(double value) {
+        // Calculate pot byte to send
+        byte mByte = gainToPotValue(500e-3/value, true);
+        Log.w("pot B byte", CommandInterface.bytesToHex(new byte[] {mByte}));
+
+        runCommand(new Command((byte) 0x08, new byte[] {mByte}, 0, new CommandInterface.CommandCallback() {
+            @Override
+            public void commandFinished(byte[] data) {
+            }
+        }));
+    };
+
+    // Convert an amplifier gain and address to a pot value to send
+    public byte gainToPotValue(double gain, boolean address) {
+        // Av = 5e3/R
+        double resistance = 5E3/gain;
+
+        // Resistance varies linearly between 175 and 9.5k
+        int value = (int) (127 - (resistance-175)/(9.5e3-175)*127);
+        // We need a value between 127 and 0
+        if (value < 0 || value > 127) { value = 0; }
+
+        byte mByte = (byte) value;
+
+        // Set MSB based on address
+        if (address) {
+            mByte |= 0x80;
+        } else {
+            mByte &= 0x7F;
+        }
+
+        return mByte;
+    }
 }
