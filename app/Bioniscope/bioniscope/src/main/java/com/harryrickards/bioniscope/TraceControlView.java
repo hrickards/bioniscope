@@ -25,6 +25,9 @@ public class TraceControlView extends LinearLayout {
     CheckBox toggle;
     SeekBar voltsDivBar;
 
+    final static double MAX_VOLTS = 5.0;
+    final static double MIN_VOLTS = 50e-3;
+
     public TraceControlView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
@@ -43,7 +46,6 @@ public class TraceControlView extends LinearLayout {
 
         // Call interface methods when checkbox toggled or slider moved
         toggle = (CheckBox) findViewById(R.id.traceToggle);
-        toggle.setChecked(true); // Default to checked
         toggle.setOnClickListener(new OnClickListener() {
             // Only called when toggled by user
             @Override
@@ -86,7 +88,7 @@ public class TraceControlView extends LinearLayout {
     protected void setVoltsDivFromProgress(int progress) {
         // Calculate new voltsDiv value
         // 5mV to 500mV
-        setVoltsDiv(5e-3+((double) progress)*495e-5, true);
+        setVoltsDiv(MIN_VOLTS+((double) progress)*(MAX_VOLTS-MIN_VOLTS)/100, true);
     }
     protected void setVoltsDiv(double mVoltsDiv, boolean fromUser) {
         voltsDiv = mVoltsDiv;
@@ -94,7 +96,7 @@ public class TraceControlView extends LinearLayout {
 
         // Move seekbar to right position if updated programmatically
         if (!fromUser) {
-            int progress = (int) ((voltsDiv-5e-3)/495e-5);
+            int progress = (int) (100*((voltsDiv-MIN_VOLTS)/(MAX_VOLTS-MIN_VOLTS)));
             voltsDivBar.setProgress(progress);
         }
     }

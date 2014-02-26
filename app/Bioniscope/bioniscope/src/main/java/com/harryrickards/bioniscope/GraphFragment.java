@@ -40,7 +40,7 @@ public class GraphFragment extends Fragment {
         timeSample = 1;
 
         // Initiate GraphView
-        mGraphView = new LineGraphView(getActivity(), "Bioniscope");
+        mGraphView = new LineGraphView(getActivity(), getString(R.string.graph_title));
         mGraphView.getGraphViewStyle().setNumHorizontalLabels(21); // 20 horizontal divisions
         mGraphView.getGraphViewStyle().setNumVerticalLabels(21); // 20 vertical divisions
         mGraphView.getGraphViewStyle().setVerticalLabelsWidth(120);

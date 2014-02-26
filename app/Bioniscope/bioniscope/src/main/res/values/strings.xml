@@ -12,12 +12,15 @@
     <string name="bluetooth_required">This application requires a bluetooth adapter</string>
     <string name="digital_fragment">Digital view coming soon...</string>
     <string name="spectrum_fragment">Spectrum view coming soon...</string>
-    <string name="digital_title">Digital Capture</string>
+    <string name="digital_title">Digital Timing Diagram</string>
     <string name="disconnect">Disconnect</string>
     <string name="connect">Connect</string>
-    <string name="time_sample_label">Time/sample (us)</string>
+    <string name="time_sample_label">Time/sample</string>
     <string name="spectrum_capture_label">Spectrum Capture</string>
-    <string name="spectrum_title">Spectrum Capture</string>
+    <string name="spectrum_title">Analogue Frequency Spectrum</string>
     <string name="first_run_title">Bluetooth Communication</string>
     <string name="first_run_body">Please follow the on-screen prompts to enable Bluetooth and pair with the Bioniscope. If prompted, enter 1234 as the PIN.</string>
+    <string name="capture_label">Capture</string>
+    <string name="volts_div_label">Voltage range</string>
+    <string name="graph_title">Analogue Waveform</string>
 </resources>

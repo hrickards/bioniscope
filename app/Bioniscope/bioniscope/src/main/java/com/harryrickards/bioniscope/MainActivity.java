@@ -3,8 +3,6 @@ package com.harryrickards.bioniscope;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import android.os.AsyncTask;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
@@ -35,6 +33,8 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
         DigitalControlsFragment.OnDigitalControlChangedListener,
         DigitalFragment.OnDigitalActionInterface {
 
+    // TODO All scales on graphs
+
     // Bluetooth
     BluetoothAdapter mBluetoothAdapter;
     CommandInterface mCommandInterface;
@@ -43,6 +43,7 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
     InputStream mInputStream;
     BluetoothSocket mSocket;
 
+    // Connection status
     TextView connectionStatus;
     Button disconnectButton;
 
@@ -55,7 +56,10 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
     static final int GRAPH_FRAGMENT = 0;
     static final int SPECTRUM_FRAGMENT = 1;
     static final int DIGITAL_FRAGMENT = 2;
-    int currentFragment;
+    int currentFragment = -1;
+
+    // Calibration constants
+    final static double DIGITAL_TIME_SAMPLE_OFFSET = 1.6;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,8 +74,6 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
                 actionBar.getThemedContext(), R.array.dropdownOptions,
                 android.R.layout.simple_spinner_dropdown_item);
         actionBar.setListNavigationCallbacks(mSpinnerAdapter, this);
-        // Go to digital
-        actionBar.setSelectedNavigationItem(2);
 
         // Show connection status to user
         connectionStatus = (TextView) findViewById(R.id.connectionStatus);
@@ -119,7 +121,7 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
             startActivity(intent);
         } else if (firstRun) {
             // Show the dialog asking the user to enable bluetooth before setting up bluetooth
-            AlertDialog dialog = new AlertDialog.Builder(this)
+            new AlertDialog.Builder(this)
                     .setTitle(getString(R.string.first_run_title))
                     .setMessage(getString(R.string.first_run_body))
                     .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
@@ -228,9 +230,23 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
         // Setup new CommandInterface to start communicating with device
         mCommandInterface = new CommandInterface(mOutputStream, mInputStream);
 
-        // Start by requesting a digital sample
-        // TODO Check mode
-        onDigitalSampleRequested();
+        // TODO Send default values (before requesting sample)
+
+        // Request a sample based on the mode we're currently in
+        switch (currentFragment) {
+            case SPECTRUM_FRAGMENT:
+                onSpectrumSampleRequested();
+                break;
+
+            case DIGITAL_FRAGMENT:
+                onDigitalSampleRequested();
+                break;
+
+            // GRAPH_FRAGMENT
+            default:
+                onSampleRequested();
+                break;
+        }
     }
 
     @Override
@@ -246,12 +262,15 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
         // If command interface has not been initialised yet, silently drop command
         if (mCommandInterface != null) {
             mCommandInterface.runCommand(command);
+            Log.w("SENT", CommandInterface.bytesToHex(new byte[] {command.command})+","+CommandInterface.bytesToHex(command.outData));
+        } else {
+            Log.w("DROPPED", "dropped command as mCommandInterface null");
+            Log.w("DROPPED", CommandInterface.bytesToHex(new byte[] {command.command})+","+CommandInterface.bytesToHex(command.outData));
         }
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
@@ -390,14 +409,15 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
         transaction1.addToBackStack(null);
         transaction1.commit();
 
+        // Sample
+        onSampleRequested();
+
         if (!(currentFragment == GRAPH_FRAGMENT || currentFragment == SPECTRUM_FRAGMENT)) {
             FragmentTransaction transaction2 = getSupportFragmentManager().beginTransaction();
             transaction2.replace(R.id.controlsContainer, mControlsFragment);
             transaction2.addToBackStack(null);
             transaction2.commit();
         }
-
-        // updateGraphYBounds();
     }
 
     // Switch to digital (basic logic analyser) view
@@ -409,10 +429,8 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
             mDigitalControlsFragment = new DigitalControlsFragment();
         }
 
-        // Sample provided we're connected to BT
-        if (mCommandInterface != null) {
-            onDigitalSampleRequested();
-        }
+        // Sample
+        onDigitalSampleRequested();
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.fragmentContainer, mDigitalFragment);
@@ -435,6 +453,9 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
         transaction1.replace(R.id.fragmentContainer, mSpectrumFragment);
         transaction1.addToBackStack(null);
         transaction1.commit();
+
+        // Sample
+        onSpectrumSampleRequested();
 
         if (!(currentFragment == GRAPH_FRAGMENT || currentFragment == SPECTRUM_FRAGMENT)) {
             FragmentTransaction transaction2 = getSupportFragmentManager().beginTransaction();
@@ -543,13 +564,13 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
         }
 
         Log.w("digital time sample", Double.toString(timeSample));
-        int timeDelay = (int) Math.floor(timeSample - 1.6);
+        int timeDelay = (int) Math.floor(timeSample - DIGITAL_TIME_SAMPLE_OFFSET);
         if (timeDelay < 0) { timeDelay = 0; }
         Log.w("digital time delay", Integer.toString(timeDelay));
 
         // Set time
         byte[] commandData = new byte[] {(byte) ((byte)timeDelay>>8), (byte) ((byte)timeDelay&0xFF)};
-        Log.w("time delay bytes", CommandInterface.bytesToHex(commandData));
+        Log.w("digital time delay bytes", CommandInterface.bytesToHex(commandData));
         Command command = new Command((byte) 0x06, commandData, 0, new CommandInterface.CommandCallback() {
             public void commandFinished(byte[] data) {
                 onDigitalSampleRequested();
@@ -595,6 +616,7 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
     // We don't need to capture these here as we just call mControlsFragment.traceXEnabled() when
     // needed
     public void onTraceOneToggled(boolean value) {
+        Log.w("trace one toggled", Boolean.toString(value));
         onRelevantAnalogSampleRequested();
         if (mGraphFragment != null) {
             mGraphFragment.setTraceOneVisibility(value);
@@ -604,6 +626,7 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
         }
     };
     public void onTraceTwoToggled(boolean value) {
+        Log.w("trace two toggled", Boolean.toString(value));
         onRelevantAnalogSampleRequested();
         if (mGraphFragment != null) {
             mGraphFragment.setTraceTwoVisibility(value);

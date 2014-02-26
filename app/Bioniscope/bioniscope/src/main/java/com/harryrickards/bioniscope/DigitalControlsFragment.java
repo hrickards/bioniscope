@@ -19,6 +19,9 @@ public class DigitalControlsFragment extends Fragment {
     TextView timeSampleLabel;
     double mTimeSample;
 
+    final static double MIN_TIME_SAMPLE = 2;
+    final static double MAX_TIME_SAMPLE = 102;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -38,7 +41,6 @@ public class DigitalControlsFragment extends Fragment {
 
         timeSampleSlider = (SeekBar) view.findViewById(R.id.timeSampleSlider);
         timeSampleLabel = (TextView) view.findViewById(R.id.timeSampleLabel);
-        setTimeSample(2);
 
         timeSampleSlider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -58,6 +60,8 @@ public class DigitalControlsFragment extends Fragment {
                 mCallback.onDigitalTimeSampleChanged(mTimeSample);
             }
         });
+
+        setTimeSample(MIN_TIME_SAMPLE, false);
     }
 
     public interface OnDigitalControlChangedListener {
@@ -69,7 +73,6 @@ public class DigitalControlsFragment extends Fragment {
     protected void setTimeSample(double timeSample, boolean fromUser) {
         mTimeSample = timeSample;
         if (!fromUser) {
-            mCallback.onDigitalTimeSampleChanged(timeSample);
             timeSampleSlider.setProgress(timeSampleToSlider(timeSample));
         }
         timeSampleLabel.setText(Double.toString(timeSample) + "us");
@@ -77,14 +80,11 @@ public class DigitalControlsFragment extends Fragment {
     protected void setTimeSample(double timeSample) {setTimeSample(timeSample, false); };
 
     protected int timeSampleToSlider(double timeSample) {
-        // timeSample is in us
-        // double ranges from 0 to 100
-        return (int) timeSample-2;
+        return (int) (100*(timeSample-MIN_TIME_SAMPLE)/(MAX_TIME_SAMPLE-MIN_TIME_SAMPLE));
     }
 
     protected double sliderToTimeSample(int sliderValue) {
-        // Reverses timeSampleToSlider
-        return (double) sliderValue+2;
+        return (MIN_TIME_SAMPLE + sliderValue*(MAX_TIME_SAMPLE-MIN_TIME_SAMPLE)/100);
     }
 
 

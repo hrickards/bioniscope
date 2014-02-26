@@ -12,7 +12,7 @@
     <Button
         android:layout_width="250dp"
         android:layout_height="50dp"
-        android:text="Capture"
+        android:text="@string/capture_label"
         android:id="@+id/captureButton"
         />
 
@@ -45,25 +45,26 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Time/div"
+            android:text="@string/time_sample_label"
             android:textSize="18sp"
             android:id="@+id/timeDivLabel"
             />
         <TextView
             android:layout_width="60sp"
             android:layout_height="wrap_content"
-            android:text="1.00kHz"
+            android:text=""
             android:id="@+id/timeDivFrequency"
             android:layout_toLeftOf="@+id/timeDivPeriod"
             android:layout_alignBottom="@+id/timeDivLabel"
             />
         <TextView
-            android:layout_width="50sp"
+            android:layout_width="60sp"
             android:layout_height="wrap_content"
-            android:text="1.00us"
+            android:text=""
             android:layout_alignParentRight="true"
             android:layout_alignBottom="@+id/timeDivLabel"
             android:id="@+id/timeDivPeriod"
+            android:gravity="right"
             />
     </RelativeLayout>
 

@@ -29,6 +29,9 @@ public class ControlsFragment extends Fragment {
     SeekBar timeDivSlider;
     double timeSample;
 
+    final static double MIN_TIME_SAMPLE = 1;
+    final static double MAX_TIME_SAMPLE = 101;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -81,6 +84,7 @@ public class ControlsFragment extends Fragment {
             // When user has finished sliding the seekbar, call interface
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
+                Log.w("scope", "onstoptrackingtouch");
                 mCallback.onTimeSampleChanged(getTimeDiv());
             }
         });
@@ -102,6 +106,13 @@ public class ControlsFragment extends Fragment {
                 mCallback.onSpectrumSampleRequested();
             }
         });
+
+        // Set default controls
+        traceOne.setTraceEnabled(true, false);
+        traceTwo.setTraceEnabled(true, false);
+        traceOne.setVoltsDiv(traceOne.MAX_VOLTS, false);
+        traceTwo.setVoltsDiv(traceTwo.MAX_VOLTS, false);
+        setTimeDiv(MIN_TIME_SAMPLE, false);
     }
 
     protected void setTimeDivFromProgress(int progress) {
@@ -109,21 +120,21 @@ public class ControlsFragment extends Fragment {
         // Reduce from 0 to 100 to 1 to 5 (1+progress/25
         // Raise 10 to above to get 10 to 100k
         //setTimeDiv(Math.pow(10, 1 + ((double) progress) / 25), true);
-        setTimeDiv(progress+1, true);
+        setTimeDiv(MIN_TIME_SAMPLE+progress*(MAX_TIME_SAMPLE-MIN_TIME_SAMPLE)/100, true);
     }
 
     protected void setTimeDiv(double mTimeSample, boolean fromUser) {
         //frequency = mFrequency;
         timeSample = mTimeSample;
-        timeDivPeriod.setText(Double.toString(timeSample)+"us");
-        timeDivFrequency.setText(SI.formatSI(1000.0/timeSample)+"kHz");
+        timeDivPeriod.setText(Double.toString(timeSample) + "us");
+        timeDivFrequency.setText(SI.formatSI(1E6/timeSample)+"Hz");
 
         // Move seekbar to right position if updated programmatically
         if (!fromUser) {
             // Inverse of f=10^(1+p/25) is 25*(log10(f)-1)
             //int progress = (int) (25*(Math.log10(frequency)-1));
             //timeDivSlider.setProgress(progress);
-            timeDivSlider.setProgress((int) mTimeSample-1);
+            timeDivSlider.setProgress((int) (100*((mTimeSample-MIN_TIME_SAMPLE)/(MAX_TIME_SAMPLE-MIN_TIME_SAMPLE))));
         }
     }
 
@@ -141,23 +152,6 @@ public class ControlsFragment extends Fragment {
         public void onSpectrumSampleRequested();
     }
 
-    // Methods to set controls based on activity values
-    public void setTraceOneEnabled(boolean enabled) {
-        traceOne.setTraceEnabled(enabled, false);
-    }
-    public void setTraceTwoEnabled(boolean enabled) {
-        traceTwo.setTraceEnabled(enabled, false);
-    }
-    public void setTraceOneVoltsDiv(double value) {
-        traceOne.setVoltsDiv(value, false);
-    }
-    public void setTraceTwoVoltsDiv(double value) {
-        traceTwo.setVoltsDiv(value, false);
-    }
-    public void setTimeDiv(double value) {
-        setTimeDiv(value, false);
-    }
-
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
@@ -171,7 +165,7 @@ public class ControlsFragment extends Fragment {
         }
     }
 
-    public boolean traceOneEnabled() {return traceOne.traceEnabled();}
-    public boolean traceTwoEnabled() {return traceTwo.traceEnabled();}
+    public boolean traceOneEnabled() {return (traceOne == null) || traceOne.traceEnabled();}
+    public boolean traceTwoEnabled() {return (traceTwo == null) || traceTwo.traceEnabled();}
 
 }

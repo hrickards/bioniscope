@@ -19,6 +19,7 @@
         android:layout_below="@+id/digitalCaptureButton"
         android:paddingTop="15dp"
         android:text="@string/time_sample_label"
+        android:textSize="18sp"
         android:id="@+id/timeSampleDescription"
     />
 
