@@ -563,8 +563,24 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
     // TODO Toggle capturing the channels when we're not displaying them
     // We don't need to capture these here as we just call mControlsFragment.traceXEnabled() when
     // needed
-    public void onTraceOneToggled(boolean value) {onRelevantAnalogSampleRequested();};
-    public void onTraceTwoToggled(boolean value) {onRelevantAnalogSampleRequested();};
+    public void onTraceOneToggled(boolean value) {
+        onRelevantAnalogSampleRequested();
+        if (mGraphFragment != null) {
+            mGraphFragment.setTraceOneVisibility(value);
+        }
+        if (mSpectrumFragment != null) {
+            mSpectrumFragment.setTraceOneVisibility(value);
+        }
+    };
+    public void onTraceTwoToggled(boolean value) {
+        onRelevantAnalogSampleRequested();
+        if (mGraphFragment != null) {
+            mGraphFragment.setTraceTwoVisibility(value);
+        }
+        if (mSpectrumFragment != null) {
+            mSpectrumFragment.setTraceTwoVisibility(value);
+        }
+    };
 
     public void onTraceOneVoltsDivChanged(double value) {
         // Calculate pot byte to send

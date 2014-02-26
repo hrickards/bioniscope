@@ -107,4 +107,10 @@ public class GraphFragment extends Fragment {
     public void setTimeSample(double mTimeSample) {
         timeSample = mTimeSample;
     }
+
+    // TODO Implement
+    public void setTraceOneVisibility(boolean visible) {
+    }
+    public void setTraceTwoVisibility(boolean visible) {
+    }
 }
