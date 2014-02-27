@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import com.jjoe64.graphview.CustomLabelFormatter;
 import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.GraphViewDataInterface;
 import com.jjoe64.graphview.GraphViewSeries;
 import com.jjoe64.graphview.LineGraphView;
 
@@ -23,6 +24,8 @@ public class GraphFragment extends Fragment {
     GraphViewSeries mSeriesA;
     GraphViewSeries mSeriesB;
     double timeSample;
+    double mVoltsRangeA;
+    double mVoltsRangeB;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -38,13 +41,15 @@ public class GraphFragment extends Fragment {
 
     protected void setupGraph() {
         timeSample = 1;
+        mVoltsRangeA = 5;
+        mVoltsRangeB = 5;
 
         // Initiate GraphView
         mGraphView = new LineGraphView(getActivity(), getString(R.string.graph_title));
-        mGraphView.getGraphViewStyle().setNumHorizontalLabels(21); // 20 horizontal divisions
-        mGraphView.getGraphViewStyle().setNumVerticalLabels(21); // 20 vertical divisions
+        mGraphView.getGraphViewStyle().setNumHorizontalLabels(11); // 11 horizontal divisions
+        mGraphView.getGraphViewStyle().setNumVerticalLabels(11); // 10 vertical divisions
         mGraphView.getGraphViewStyle().setVerticalLabelsWidth(120);
-        mGraphView.setManualYAxisBounds(256, 0);
+        mGraphView.setManualYAxisBounds(5, -5);
         mGraphView.setViewPort(0, 100);
         mGraphView.setScalable(true);
         mGraphView.setScrollable(true);
@@ -87,11 +92,21 @@ public class GraphFragment extends Fragment {
 
     // B iff channel, else A
     public void setData(byte[] xData, boolean channel) {
+        // Get the voltage range
+        double voltsRange;
+        if (channel) {
+            voltsRange = mVoltsRangeA;
+        } else {
+            voltsRange = mVoltsRangeB;
+        }
+
+        mGraphView.setManualYAxisBounds(voltsRange, -voltsRange);
+
         GraphView.GraphViewData[] data = new GraphView.GraphViewData[xData.length];
         for (int i=0; i<xData.length; i++) {
             // Bytes are unsigned, so to convert into a positive int we have to take the absolute
             // value
-            data[i] = new GraphView.GraphViewData(i*timeSample, Math.abs((int) xData[i]));
+            data[i] = new GraphView.GraphViewData(i*timeSample, (Math.abs((int) xData[i])-127.5)*2*voltsRange/255.0);
         }
 
         // Get the series to add the data to
@@ -108,9 +123,14 @@ public class GraphFragment extends Fragment {
         timeSample = mTimeSample;
     }
 
-    // TODO Implement
-    public void setTraceOneVisibility(boolean visible) {
+    public void setVoltsRangeA(double voltsRangeA) {
+        mVoltsRangeA = voltsRangeA;
     }
-    public void setTraceTwoVisibility(boolean visible) {
+
+    public void setVoltsRangeB(double voltsRangeB) {
+        mVoltsRangeB = voltsRangeB;
     }
+
+    public void hideTraceOne() {mSeriesA.resetData(new GraphView.GraphViewData[] {});}
+    public void hideTraceTwo() {mSeriesB.resetData(new GraphView.GraphViewData[] {});}
 }

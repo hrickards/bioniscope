@@ -96,9 +96,6 @@ public class SpectrumFragment extends Fragment {
         series.resetData(data);
     }
 
-    // TODO Implement
-    public void setTraceOneVisibility(boolean visible) {
-    }
-    public void setTraceTwoVisibility(boolean visible) {
-    }
+    public void hideTraceOne() {mSeriesA.resetData(new GraphView.GraphViewData[] {});}
+    public void hideTraceTwo() {mSeriesB.resetData(new GraphView.GraphViewData[] {});}
 }

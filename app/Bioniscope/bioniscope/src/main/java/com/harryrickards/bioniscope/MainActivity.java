@@ -560,7 +560,8 @@ public class MainActivity extends Activity implements OnNavigationListener,
                     runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                            if (mGraphFragment != null) {
+                        // Check to see if trace status has changed since we asked for data
+                        if (mGraphFragment != null && mControlsFragment.traceOneEnabled()) {
                                 mGraphFragment.setData(mData, false);
                             }
                         }
@@ -577,7 +578,8 @@ public class MainActivity extends Activity implements OnNavigationListener,
                     runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                            if (mGraphFragment != null) {
+                        // Check to see if trace status has changed since we asked for data
+                        if (mGraphFragment != null && mControlsFragment.traceTwoEnabled()) {
                                 mGraphFragment.setData(mData, true);
                             }
                         }
@@ -597,7 +599,8 @@ public class MainActivity extends Activity implements OnNavigationListener,
                     runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                            if (mSpectrumFragment != null) {
+                            // Check to see if trace status has changed since we asked for data
+                            if (mSpectrumFragment != null && mControlsFragment.traceOneEnabled()) {
                                 mSpectrumFragment.setData(mData, false);
                             }
                         }
@@ -614,7 +617,8 @@ public class MainActivity extends Activity implements OnNavigationListener,
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        if (mSpectrumFragment != null) {
+                        // Check to see if trace status has changed since we asked for data
+                        if (mSpectrumFragment != null && mControlsFragment.traceTwoEnabled()) {
                             mSpectrumFragment.setData(mData, true);
                         }
                     }
@@ -682,27 +686,35 @@ public class MainActivity extends Activity implements OnNavigationListener,
     // We don't need to capture these here as we just call mControlsFragment.traceXEnabled() when
     // needed
     public void onTraceOneToggled(boolean value) {
-        Log.w("trace one toggled", Boolean.toString(value));
+        // If disabling, we need to stop showing the trace
+        if (!value) {
+            if (mGraphFragment != null) {
+                mGraphFragment.hideTraceOne();
+            }
+            if (mSpectrumFragment != null) {
+                mSpectrumFragment.hideTraceOne();
+            }
+        }
         onRelevantAnalogSampleRequested();
-        if (mGraphFragment != null) {
-            mGraphFragment.setTraceOneVisibility(value);
-        }
-        if (mSpectrumFragment != null) {
-            mSpectrumFragment.setTraceOneVisibility(value);
-        }
     };
     public void onTraceTwoToggled(boolean value) {
-        Log.w("trace two toggled", Boolean.toString(value));
+        // If disabling, we need to stop showing the trace
+        if (!value) {
+            if (mGraphFragment != null) {
+                mGraphFragment.hideTraceTwo();
+            }
+            if (mSpectrumFragment != null) {
+                mSpectrumFragment.hideTraceTwo();
+            }
+        }
         onRelevantAnalogSampleRequested();
-        if (mGraphFragment != null) {
-            mGraphFragment.setTraceTwoVisibility(value);
-        }
-        if (mSpectrumFragment != null) {
-            mSpectrumFragment.setTraceTwoVisibility(value);
-        }
     };
 
     public void onTraceOneVoltsDivChanged(double value) {
+        if (mGraphFragment != null) {
+            mGraphFragment.setVoltsRangeA(value);
+        }
+
         // Calculate pot byte to send
         byte mByte = gainToPotValue(500e-3/value, false);
         Log.w("pot A byte", CommandInterface.bytesToHex(new byte[] {mByte}));
@@ -714,8 +726,12 @@ public class MainActivity extends Activity implements OnNavigationListener,
         }));
     };
     public void onTraceTwoVoltsDivChanged(double value) {
+        if (mGraphFragment != null) {
+            mGraphFragment.setVoltsRangeB(value);
+        }
+
         // Calculate pot byte to send
-        byte mByte = gainToPotValue(500e-3/value, true);
+        byte mByte = gainToPotValue(2.5/value, true);
         Log.w("pot B byte", CommandInterface.bytesToHex(new byte[] {mByte}));
 
         runCommand(new Command((byte) 0x08, new byte[] {mByte}, 0, new CommandInterface.CommandCallback() {

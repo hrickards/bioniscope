@@ -92,7 +92,7 @@ public class TraceControlView extends LinearLayout {
     }
     protected void setVoltsDiv(double mVoltsDiv, boolean fromUser) {
         voltsDiv = mVoltsDiv;
-        voltsDivLabel.setText(SI.formatSI(voltsDiv)+"V");
+        voltsDivLabel.setText("\u00B1" + SI.formatSI(voltsDiv)+"V");
 
         // Move seekbar to right position if updated programmatically
         if (!fromUser) {

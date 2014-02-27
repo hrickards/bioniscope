@@ -46,5 +46,6 @@
         android:layout_alignParentRight="true"
         android:layout_below="@+id/traceTitle"
         android:id="@+id/voltsDivValue"
+        android:paddingLeft="5dip"
         android:text=""/>
 </RelativeLayout>
