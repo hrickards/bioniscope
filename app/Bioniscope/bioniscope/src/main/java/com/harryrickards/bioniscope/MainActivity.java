@@ -3,7 +3,10 @@ package com.harryrickards.bioniscope;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.app.FragmentTransaction;
 import android.app.ActionBar;
@@ -37,6 +40,7 @@ public class MainActivity extends Activity implements OnNavigationListener,
 
     // Bluetooth
     BluetoothAdapter mBluetoothAdapter;
+    BluetoothDevice mDevice;
     CommandInterface mCommandInterface;
     private static final int REQUEST_ENABLE_BT = 1; // Request code returned from enabling BT
     OutputStream mOutputStream;
@@ -172,12 +176,9 @@ public class MainActivity extends Activity implements OnNavigationListener,
 
         @Override
         protected void onPostExecute(Void args) {
-            // Show button
-            disconnectButton.setVisibility(View.VISIBLE);
-            if (e == null) {
-                connectionStatus.setText(getString(R.string.connected));
-                disconnectButton.setText(getString(R.string.disconnect));
-            } else {
+            if (e != null) {
+                // Show button
+                disconnectButton.setVisibility(View.VISIBLE);
                 connectionStatus.setText(getString(R.string.connection_failed));
                 disconnectButton.setText(getString(R.string.connect));
             }
@@ -205,6 +206,9 @@ public class MainActivity extends Activity implements OnNavigationListener,
             mSocket = null;
         }
 
+        // Make device null
+        mDevice = null;
+
         // Change disconnect button text to connect
         disconnectButton.setText(getString(R.string.connect));
         // Change status text to disconnected
@@ -214,21 +218,72 @@ public class MainActivity extends Activity implements OnNavigationListener,
 
     // Connect to Bluetooth device
     private void connectBluetooth() throws IOException {
-        // Connect to preset Bluetooth device
-        // TODO choose device
-        String address = "00:13:12:18:62:59";
-        BluetoothDevice mDevice = mBluetoothAdapter.getRemoteDevice(address);
+        // Scan for bluetooth devices
+        mBluetoothAdapter.startDiscovery();
+        BluetoothReceiver mReceiver = new BluetoothReceiver();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(BluetoothDevice.ACTION_FOUND);
+        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+        registerReceiver(mReceiver, filter);
+    }
 
-        // Setup serial communication with device
-        UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb"); // Serial UUID
-        mSocket = mDevice.createRfcommSocketToServiceRecord(uuid);
-        mSocket.connect();
+    public class BluetoothReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+                // Get the device that's been found and check if it's the HC06
+                // TODO Allow user to set name to check against
+                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                Log.w("scope", "FOUND " + device.getName() + " " + device.getAddress());
+                if (device.getName().equals("HC-06")) {
+                    // So we know we've found something
+                    mDevice = device;
 
-        mOutputStream = mSocket.getOutputStream();
-        mInputStream = mSocket.getInputStream();
+                    // Stop discovery
+                    mBluetoothAdapter.cancelDiscovery();
 
-        // Setup new CommandInterface to start communicating with device
-        mCommandInterface = new CommandInterface(mOutputStream, mInputStream);
+                    // Connect to the device
+                    connectToDevice();
+                }
+                // Called if discovery fails or when we stop it when we succeed
+            } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
+                if (mDevice == null) {
+                    // Couldn't find the device
+                    Log.w("scope", "no HC06 found");
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            disconnectButton.setVisibility(View.VISIBLE);
+                            connectionStatus.setText(getString(R.string.connection_failed));
+                            disconnectButton.setText(getString(R.string.connect));
+                        }
+                    });
+                }
+            }
+        }
+    }
+
+    public void connectToDevice() {
+        try {
+            // Setup serial communication with device
+            UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb"); // Serial UUID
+            mSocket = mDevice.createRfcommSocketToServiceRecord(uuid);
+            mSocket.connect();
+
+            mOutputStream = mSocket.getOutputStream();
+            mInputStream = mSocket.getInputStream();
+
+            // Setup new CommandInterface to start communicating with device
+            mCommandInterface = new CommandInterface(mOutputStream, mInputStream);
+        } catch (IOException e) {
+            Log.w("scope", "bluetooth IO exception");
+            disconnectButton.setVisibility(View.VISIBLE);
+            connectionStatus.setText(getString(R.string.connection_failed));
+            disconnectButton.setText(getString(R.string.connect));
+        }
+
 
         // TODO Send default values (before requesting sample)
 
@@ -247,6 +302,17 @@ public class MainActivity extends Activity implements OnNavigationListener,
                 onSampleRequested();
                 break;
         }
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // Show button
+                disconnectButton.setVisibility(View.VISIBLE);
+                // No exceptions and device found
+                connectionStatus.setText(getString(R.string.connected));
+                disconnectButton.setText(getString(R.string.disconnect));
+            }
+        });
     }
 
     @Override
