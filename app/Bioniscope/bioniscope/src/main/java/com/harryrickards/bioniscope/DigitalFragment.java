@@ -34,9 +34,9 @@ public class DigitalFragment extends Fragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         mGraphView = new LineGraphView(getActivity(), getString(R.string.digital_title));
         mGraphView.getGraphViewStyle().setNumHorizontalLabels(11); // 10 horizontal divisions
-        mGraphView.getGraphViewStyle().setNumVerticalLabels(26); // 25 vertical divisions
+        mGraphView.getGraphViewStyle().setNumVerticalLabels(24); // 23 vertical divisions
         mGraphView.getGraphViewStyle().setVerticalLabelsWidth(120);
-        mGraphView.setManualYAxisBounds(25, 0);
+        mGraphView.setManualYAxisBounds(23, 0);
         mGraphView.setViewPort(0, 100);
         mGraphView.setScalable(true);
         mGraphView.setScrollable(true);
@@ -45,7 +45,12 @@ public class DigitalFragment extends Fragment {
             public String formatLabel(double value, boolean isValueX) {
                 // Only format y values
                 if (!isValueX) {
+                    if (value > 23) { return ""; }
 
+                    int val = (int) value;
+                    if (val % 3 == 0) { return "0"; }
+                    else if (val % 3 == 1) { return "1"; }
+                    else { return ""; }
                 }
                 return null;
             }
