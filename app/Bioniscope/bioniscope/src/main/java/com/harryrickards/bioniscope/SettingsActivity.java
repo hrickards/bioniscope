@@ -5,8 +5,8 @@ import com.harryrickards.bioniscope.R;
 import android.content.Intent;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
-import android.support.v4.app.NavUtils;
-import android.support.v7.app.ActionBar;
+import android.support.v4.app.NavUtils; // Navutils baked into Activity only on JB and above
+import android.app.ActionBar;
 import android.view.MenuItem;
 
 public class SettingsActivity extends PreferenceActivity {
@@ -16,9 +16,8 @@ public class SettingsActivity extends PreferenceActivity {
         addPreferencesFromResource(R.xml.preferences);
 
         // Show up button
-        // TODO Use getSupportActionBar
         // To to this, need a PreferenceActivity that extends from ActionBarActivity
-        // getActionBar().setDisplayHomeAsUpEnabled(true);
+        getActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
     @Override

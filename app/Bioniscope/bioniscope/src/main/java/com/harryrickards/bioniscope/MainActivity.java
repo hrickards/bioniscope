@@ -1,17 +1,17 @@
 package com.harryrickards.bioniscope;
 
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.ActionBar;
+import android.app.FragmentTransaction;
+import android.app.ActionBar;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
-import android.support.v7.app.ActionBarActivity;
-import android.support.v7.app.ActionBar.OnNavigationListener;
+import android.app.ActionBar.OnNavigationListener;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -28,7 +28,7 @@ import java.io.OutputStream;
 import java.io.InputStream;
 import java.util.UUID;
 
-public class MainActivity extends ActionBarActivity implements OnNavigationListener,
+public class MainActivity extends Activity implements OnNavigationListener,
         ControlsFragment.OnControlChangedListener,
         DigitalControlsFragment.OnDigitalControlChangedListener,
         DigitalFragment.OnDigitalActionInterface {
@@ -67,7 +67,7 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
         setContentView(R.layout.activity_main);
 
         // Setup dropdown navigation in the action bar
-        ActionBar actionBar = getSupportActionBar();
+        ActionBar actionBar = getActionBar();
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
         actionBar.setDisplayShowTitleEnabled(false);
         SpinnerAdapter mSpinnerAdapter = ArrayAdapter.createFromResource(
@@ -404,7 +404,7 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
             mControlsFragment = new ControlsFragment();
         }
 
-        FragmentTransaction transaction1 = getSupportFragmentManager().beginTransaction();
+        FragmentTransaction transaction1 = getFragmentManager().beginTransaction();
         transaction1.replace(R.id.fragmentContainer, mGraphFragment);
         transaction1.addToBackStack(null);
         transaction1.commit();
@@ -413,7 +413,7 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
         onSampleRequested();
 
         if (!(currentFragment == GRAPH_FRAGMENT || currentFragment == SPECTRUM_FRAGMENT)) {
-            FragmentTransaction transaction2 = getSupportFragmentManager().beginTransaction();
+            FragmentTransaction transaction2 = getFragmentManager().beginTransaction();
             transaction2.replace(R.id.controlsContainer, mControlsFragment);
             transaction2.addToBackStack(null);
             transaction2.commit();
@@ -432,7 +432,7 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
         // Sample
         onDigitalSampleRequested();
 
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        FragmentTransaction transaction = getFragmentManager().beginTransaction();
         transaction.replace(R.id.fragmentContainer, mDigitalFragment);
         transaction.replace(R.id.controlsContainer, mDigitalControlsFragment);
         transaction.addToBackStack(null);
@@ -449,7 +449,7 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
             mControlsFragment = new ControlsFragment();
         }
 
-        FragmentTransaction transaction1 = getSupportFragmentManager().beginTransaction();
+        FragmentTransaction transaction1 = getFragmentManager().beginTransaction();
         transaction1.replace(R.id.fragmentContainer, mSpectrumFragment);
         transaction1.addToBackStack(null);
         transaction1.commit();
@@ -458,7 +458,7 @@ public class MainActivity extends ActionBarActivity implements OnNavigationListe
         onSpectrumSampleRequested();
 
         if (!(currentFragment == GRAPH_FRAGMENT || currentFragment == SPECTRUM_FRAGMENT)) {
-            FragmentTransaction transaction2 = getSupportFragmentManager().beginTransaction();
+            FragmentTransaction transaction2 = getFragmentManager().beginTransaction();
             transaction2.replace(R.id.controlsContainer, mControlsFragment);
             transaction2.addToBackStack(null);
             transaction2.commit();
