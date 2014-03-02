@@ -42,6 +42,9 @@ public class ControlsFragment extends Fragment {
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
+        captureButton = (Button) view.findViewById(R.id.captureButton);
+        spectrumCaptureButton = (Button) view.findViewById(R.id.spectrumCaptureButton);
+
         // Route interface methods for the two traces through to the main activity
         traceOne = (TraceControlView) getView().findViewById(R.id.traceOne);
         traceTwo = (TraceControlView) getView().findViewById(R.id.traceTwo);
@@ -93,14 +96,12 @@ public class ControlsFragment extends Fragment {
         timeDivFrequency = (TextView) getView().findViewById(R.id.timeDivFrequency);
 
         // Button to sample
-        captureButton = (Button) view.findViewById(R.id.captureButton);
         captureButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mCallback.onSampleRequested();
             }
         });
-        spectrumCaptureButton = (Button) view.findViewById(R.id.spectrumCaptureButton);
         spectrumCaptureButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

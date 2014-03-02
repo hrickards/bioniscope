@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.app.FragmentTransaction;
@@ -17,6 +18,7 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.app.ActionBar.OnNavigationListener;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -64,6 +66,9 @@ public class MainActivity extends Activity implements OnNavigationListener,
     static final int DIGITAL_FRAGMENT = 2;
     int currentFragment = -1;
 
+    // Preferences
+    SharedPreferences preferences;
+
     // Calibration constants
     // TODO Move these to be calibrated
     final static double DIGITAL_TIME_SAMPLE_OFFSET = 1.6;
@@ -106,15 +111,14 @@ public class MainActivity extends Activity implements OnNavigationListener,
             }
         });
 
+        // Preferences
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         // Show an info message about Bluetooth on the app's first run
         // Based on SO7562786
-        boolean firstRun = getSharedPreferences("PREFERENCE", MODE_PRIVATE).getBoolean("firstRun", true);
+        boolean firstRun = preferences.getBoolean("firstRun", true);
         if (firstRun) {
-            getSharedPreferences("PREFERENCE", MODE_PRIVATE)
-                    .edit()
-                    .putBoolean("firstRun", false)
-                    .commit();
+            preferences.edit().putBoolean("firstRun", false).commit();
         }
 
         // Check device has bluetooth and get bluetooth adapter
@@ -219,6 +223,7 @@ public class MainActivity extends Activity implements OnNavigationListener,
     // Connect to Bluetooth device
     private void connectBluetooth() throws IOException {
         // Scan for bluetooth devices
+        if (mBluetoothAdapter.isDiscovering()) {mBluetoothAdapter.cancelDiscovery();}
         mBluetoothAdapter.startDiscovery();
         BluetoothReceiver mReceiver = new BluetoothReceiver();
         IntentFilter filter = new IntentFilter();
@@ -233,12 +238,11 @@ public class MainActivity extends Activity implements OnNavigationListener,
             String action = intent.getAction();
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 // Get the device that's been found and check if it's the HC06
-                // TODO Allow user to set name to check against
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 Log.w("scope", "FOUND " + device.getName() + " " + device.getAddress());
 
-                String wantedName = "HC-06";
-                Log.w("scope", "SEARCHING FOR " + device.getName());
+                String wantedName = preferences.getString("pref_device_name", "HC-06");
+                Log.w("scope", "SEARCHING FOR " + wantedName);
 
                 if (device.getName().equals(wantedName)) {
                     // So we know we've found something

@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <CheckBoxPreference
-        android:key="pref_sync"
-        android:title="Sync"
-        android:summary="Sync..."
-        android:defaultValue="true" />
+    <EditTextPreference
+        android:key="pref_device_name"
+        android:title="Bluetooth name"
+        android:summary="The bluetooth device name of the Bioniscope electronics. e.g., HC-06"
+        android:defaultValue="HC-06"
+    />
 </PreferenceScreen>
