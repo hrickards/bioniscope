@@ -50,6 +50,7 @@ public class MainActivity extends Activity implements OnNavigationListener,
     OutputStream mOutputStream;
     InputStream mInputStream;
     BluetoothSocket mSocket;
+    BluetoothReceiver mReceiver;
 
     // Connection status
     TextView connectionStatus;
@@ -225,11 +226,14 @@ public class MainActivity extends Activity implements OnNavigationListener,
         // Scan for bluetooth devices
         if (mBluetoothAdapter.isDiscovering()) {mBluetoothAdapter.cancelDiscovery();}
         mBluetoothAdapter.startDiscovery();
-        BluetoothReceiver mReceiver = new BluetoothReceiver();
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(BluetoothDevice.ACTION_FOUND);
-        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-        registerReceiver(mReceiver, filter);
+
+        if (mReceiver == null) {
+            mReceiver = new BluetoothReceiver();
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(BluetoothDevice.ACTION_FOUND);
+            filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+            registerReceiver(mReceiver, filter);
+        }
     }
 
     public class BluetoothReceiver extends BroadcastReceiver {
@@ -495,7 +499,12 @@ public class MainActivity extends Activity implements OnNavigationListener,
 
     protected void sampleGraph() {
         if (mControlsFragment != null && mControlsFragment.traceOneEnabled()) {
-            mControlsFragment.setSampleButtonOneEnabled(false);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mControlsFragment.setSampleButtonOneEnabled(false);
+                }
+            });
             // Run command to get data from channel A
             runCommand(new Command((byte) 0x00, new byte[]{}, 1024, new CommandInterface.CommandCallback() {
                 public void commandFinished(byte[] data) {
@@ -515,7 +524,12 @@ public class MainActivity extends Activity implements OnNavigationListener,
         }
 
         if (mControlsFragment != null && mControlsFragment.traceTwoEnabled()) {
-            mControlsFragment.setSampleButtonTwoEnabled(false);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mControlsFragment.setSampleButtonTwoEnabled(false);
+                }
+            });
             // Run command to get data from channel B
             runCommand(new Command((byte) 0x01, new byte[] {}, 1024, new CommandInterface.CommandCallback() {
                 public void commandFinished(byte[] data) {
@@ -548,7 +562,12 @@ public class MainActivity extends Activity implements OnNavigationListener,
 
     protected void sampleSpectrum() {
         if (mControlsFragment != null && mControlsFragment.traceOneEnabled()) {
-            mControlsFragment.setSpectrumSampleButtonOneEnabled(false);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mControlsFragment.setSpectrumSampleButtonOneEnabled(false);
+                }
+            });
             // Run command to get data from channel A
             runCommand(new Command((byte) 0x00, new byte[] {}, 1024, new CommandInterface.CommandCallback() {
                 public void commandFinished(byte[] data) {
@@ -568,7 +587,12 @@ public class MainActivity extends Activity implements OnNavigationListener,
         }
 
         if (mControlsFragment != null && mControlsFragment.traceTwoEnabled()) {
-            mControlsFragment.setSpectrumSampleButtonTwoEnabled(false);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mControlsFragment.setSpectrumSampleButtonTwoEnabled(false);
+                }
+            });
             // Run command to get data from channel B
             runCommand(new Command((byte) 0x01, new byte[] {}, 1024, new CommandInterface.CommandCallback() {
                 public void commandFinished(byte[] data) {
@@ -702,6 +726,7 @@ public class MainActivity extends Activity implements OnNavigationListener,
         runCommand(new Command((byte) 0x08, new byte[] {mByte}, 0, new CommandInterface.CommandCallback() {
             @Override
             public void commandFinished(byte[] data) {
+                onRelevantAnalogueSampleRequested();
             }
         }));
     }
@@ -717,6 +742,7 @@ public class MainActivity extends Activity implements OnNavigationListener,
         runCommand(new Command((byte) 0x08, new byte[] {mByte}, 0, new CommandInterface.CommandCallback() {
             @Override
             public void commandFinished(byte[] data) {
+                onDigitalSampleRequested();
             }
         }));
     }
@@ -741,5 +767,12 @@ public class MainActivity extends Activity implements OnNavigationListener,
         }
 
         return mByte;
+    }
+
+    @Override
+    protected void onStop() {
+        // Unregister bluetooth IntentReceiver
+        unregisterReceiver(mReceiver);
+        super.onStop();
     }
 }

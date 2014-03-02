@@ -23,4 +23,7 @@
     <string name="capture_label">Capture</string>
     <string name="volts_div_label">Voltage range</string>
     <string name="graph_title">Analogue Waveform</string>
+    <string name="x_label">Time/\u00B5s</string>
+    <string name="y_label">Voltage/V</string>
+    <string name="spectrum_y_label">Amplitude</string><!-- TODO What is the unit? -->
 </resources>
