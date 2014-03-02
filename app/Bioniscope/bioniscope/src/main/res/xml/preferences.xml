@@ -7,4 +7,25 @@
         android:summary="The bluetooth device name of the Bioniscope electronics. e.g., HC-06"
         android:defaultValue="HC-06"
     />
+    <EditTextPreference
+        android:key="pref_digital_time_sample_offset"
+        android:title="Digital time/sample offset"
+        android:summary="The time it takes to capture a digital sample when the delay is set to 0us. In us."
+        android:defaultValue="1.6"
+        android:inputType="numberDecimal"
+    />
+    <EditTextPreference
+        android:key="pref_analogue_time_sample_offset"
+        android:title="Analogue time/sample offset"
+        android:summary="The time it takes to capture an analogue sample when the delay is set to 0us. In us."
+        android:defaultValue="0"
+        android:inputType="numberDecimal"
+        />
+    <EditTextPreference
+        android:key="pref_zero_point"
+        android:title="Zero point"
+        android:summary="A decimal value from 0 to 255 inclusive representing the level the ADC reports 0V as."
+        android:defaultValue="127.5"
+        android:inputType="numberDecimal"
+    />
 </PreferenceScreen>

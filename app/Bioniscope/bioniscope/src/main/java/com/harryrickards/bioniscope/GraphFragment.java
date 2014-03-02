@@ -1,8 +1,10 @@
 package com.harryrickards.bioniscope;
 
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,6 +24,10 @@ public class GraphFragment extends Fragment {
     double timeSample;
     double mVoltsRangeA;
     double mVoltsRangeB;
+    SharedPreferences preferences;
+
+    final static String PREF_ZERO_POINT = "pref_zero_point";
+    final static double DEFAULT_ZERO_POINT = 127.5;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -78,8 +84,7 @@ public class GraphFragment extends Fragment {
         for (int i=0; i<xData.length; i++) {
             // Bytes are unsigned, so to convert into a positive int we have to take the absolute
             // value
-            // TODO Move these to be calibrated
-            data[i] = new GraphView.GraphViewData(i*timeSample, (Math.abs((int) xData[i])-127.5)*2*voltsRange/255.0);
+            data[i] = new GraphView.GraphViewData(i*timeSample, (Math.abs((int) xData[i])-preferencesGetDouble(PREF_ZERO_POINT, DEFAULT_ZERO_POINT))*2*voltsRange/255.0);
         }
 
         // Get the series to add the data to
@@ -106,4 +111,13 @@ public class GraphFragment extends Fragment {
 
     public void hideTraceOne() {mSeriesA.resetData(new GraphView.GraphViewData[] {});}
     public void hideTraceTwo() {mSeriesB.resetData(new GraphView.GraphViewData[] {});}
+
+
+    // Get a double from the default SharedPreferences
+    double preferencesGetDouble(String key, double defaultValue) {
+        if (preferences == null) {
+            preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        }
+        return Double.parseDouble(preferences.getString(key, String.valueOf(defaultValue)));
+    }
 }

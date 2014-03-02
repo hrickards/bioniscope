@@ -39,8 +39,7 @@ public class MainActivity extends Activity implements OnNavigationListener,
         DigitalControlsFragment.OnDigitalControlChangedListener,
         DigitalFragment.OnDigitalActionInterface {
 
-    // TODO Titles on graph axes
-    // Increase bluetooth baud rate
+    // TODO Increase bluetooth baud rate
 
     // Bluetooth
     BluetoothAdapter mBluetoothAdapter;
@@ -69,13 +68,13 @@ public class MainActivity extends Activity implements OnNavigationListener,
 
     // Preferences
     SharedPreferences preferences;
+    static final String PREF_DEVICE_NAME = "pref_device_name";
+    static final String PREF_DIGITAL_TIME_SAMPLE_OFFSET = "pref_digital_time_sample_offset";
+    static final String PREF_ANALOGUE_TIME_SAMPLE_OFFSET = "pref_analogue_time_sample_offset";
 
     // Calibration constants
-    // TODO Move these to be calibrated
-    final static double DIGITAL_TIME_SAMPLE_OFFSET = 1.6;
-    final static double ANALOGUE_TIME_SAMPLE_OFFSET = 0;
-
-    // TODO Log only if development enabled
+    final static double DEFAULT_DIGITAL_TIME_SAMPLE_OFFSET = 1.6;
+    final static double DEFAULT_ANALOGUE_TIME_SAMPLE_OFFSET = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -243,10 +242,10 @@ public class MainActivity extends Activity implements OnNavigationListener,
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 // Get the device that's been found and check if it's the HC06
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                Log.w("scope", "FOUND " + device.getName() + " " + device.getAddress());
+                Log.v("scope", "FOUND " + device.getName() + " " + device.getAddress());
 
-                String wantedName = preferences.getString("pref_device_name", "HC-06");
-                Log.w("scope", "SEARCHING FOR " + wantedName);
+                String wantedName = preferences.getString(PREF_DEVICE_NAME, "HC-06");
+                Log.v("scope", "SEARCHING FOR " + wantedName);
 
                 if (device.getName().equals(wantedName)) {
                     // So we know we've found something
@@ -262,7 +261,7 @@ public class MainActivity extends Activity implements OnNavigationListener,
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 if (mDevice == null) {
                     // Couldn't find the device
-                    Log.w("scope", "no HC06 found");
+                    Log.v("scope", "no HC06 found");
 
                     runOnUiThread(new Runnable() {
                         @Override
@@ -288,7 +287,7 @@ public class MainActivity extends Activity implements OnNavigationListener,
             // Setup new CommandInterface to start communicating with device
             mCommandInterface = new CommandInterface(mOutputStream, mInputStream);
         } catch (IOException e) {
-            Log.w("scope", "bluetooth IO exception");
+            Log.v("scope", "bluetooth IO exception");
             onConnectionFailed();
         }
 
@@ -347,10 +346,10 @@ public class MainActivity extends Activity implements OnNavigationListener,
         // If command interface has not been initialised yet, silently drop command
         if (mCommandInterface != null) {
             mCommandInterface.runCommand(command);
-            Log.w("SENT", CommandInterface.bytesToHex(new byte[] {command.command})+","+CommandInterface.bytesToHex(command.outData));
+            Log.v("scope", "SENT: " + CommandInterface.bytesToHex(new byte[] {command.command})+","+CommandInterface.bytesToHex(command.outData));
         } else {
-            Log.w("DROPPED", "dropped command as mCommandInterface null");
-            Log.w("DROPPED", CommandInterface.bytesToHex(new byte[] {command.command})+","+CommandInterface.bytesToHex(command.outData));
+            Log.v("scope", "DROPPED" + "dropped command as mCommandInterface null");
+            Log.v("scope", "DROPPED" + CommandInterface.bytesToHex(new byte[] {command.command})+","+CommandInterface.bytesToHex(command.outData));
         }
     }
 
@@ -440,7 +439,7 @@ public class MainActivity extends Activity implements OnNavigationListener,
     public void switchToSpectrum() {
         if (mSpectrumFragment == null) {
             mSpectrumFragment = new SpectrumFragment();
-            Log.w("scope", "new spec fragment");
+            Log.v("scope", "new spec fragment");
         }
         if (mControlsFragment == null) {
             mControlsFragment = new ControlsFragment();
@@ -617,14 +616,14 @@ public class MainActivity extends Activity implements OnNavigationListener,
             mDigitalFragment.setTimeSample(timeSample);
         }
 
-        Log.w("digital time sample", Double.toString(timeSample));
-        int timeDelay = (int) Math.floor(timeSample - DIGITAL_TIME_SAMPLE_OFFSET);
+        Log.v("scope", "digital time sample" + Double.toString(timeSample));
+        int timeDelay = (int) Math.floor(timeSample - preferencesGetDouble(PREF_DIGITAL_TIME_SAMPLE_OFFSET, DEFAULT_DIGITAL_TIME_SAMPLE_OFFSET));
         if (timeDelay < 0) { timeDelay = 0; }
-        Log.w("digital time delay", Integer.toString(timeDelay));
+        Log.v("scope", "digital time delay" + Integer.toString(timeDelay));
 
         // Set time
         byte[] commandData = new byte[] {(byte) ((byte)timeDelay>>8), (byte) ((byte)timeDelay&0xFF)};
-        Log.w("digital time delay bytes", CommandInterface.bytesToHex(commandData));
+        Log.v("scope", "digital time delay bytes" + CommandInterface.bytesToHex(commandData));
         Command command = new Command((byte) 0x06, commandData, 0, new CommandInterface.CommandCallback() {
             public void commandFinished(byte[] data) {
                 onDigitalSampleRequested();
@@ -641,20 +640,28 @@ public class MainActivity extends Activity implements OnNavigationListener,
             mSpectrumFragment.setTimeSample(timeSample);
         }
 
-        Log.w("analogue time sample", Double.toString(timeSample));
-        int timeDelay = (int) Math.floor(timeSample - ANALOGUE_TIME_SAMPLE_OFFSET);
+        Log.v("scope", "analogue time sample" + Double.toString(timeSample));
+        int timeDelay = (int) Math.floor(timeSample - preferencesGetDouble(PREF_ANALOGUE_TIME_SAMPLE_OFFSET, DEFAULT_ANALOGUE_TIME_SAMPLE_OFFSET));
         if (timeDelay < 0) { timeDelay = 0; }
-        Log.w("analogue time delay", Integer.toString(timeDelay));
+        Log.v("scope", "analogue time delay" + Integer.toString(timeDelay));
 
         // Set time
         byte[] commandData = new byte[] {(byte) ((byte)timeDelay>>8), (byte) ((byte)timeDelay&0xFF)};
-        Log.w("analogue time delay bytes", CommandInterface.bytesToHex(commandData));
+        Log.v("scope", "analogue time delay bytes" + CommandInterface.bytesToHex(commandData));
         Command command = new Command((byte) 0x11, commandData, 0, new CommandInterface.CommandCallback() {
             public void commandFinished(byte[] data) {
                 onRelevantAnalogueSampleRequested();
             }
         });
         runCommand(command);
+    }
+
+    // Get a double from the default SharedPreferences
+    double preferencesGetDouble(String key, double defaultValue) {
+        if (preferences == null) {
+            preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        }
+        return Double.parseDouble(preferences.getString(key, String.valueOf(defaultValue)));
     }
 
     protected void onRelevantAnalogueSampleRequested() {
@@ -721,7 +728,7 @@ public class MainActivity extends Activity implements OnNavigationListener,
 
         // Calculate pot byte to send
         byte mByte = gainToPotValue(500e-3/value, false);
-        Log.w("pot A byte", CommandInterface.bytesToHex(new byte[] {mByte}));
+        Log.v("scope", "pot A byte" + CommandInterface.bytesToHex(new byte[] {mByte}));
 
         runCommand(new Command((byte) 0x08, new byte[] {mByte}, 0, new CommandInterface.CommandCallback() {
             @Override
@@ -737,7 +744,7 @@ public class MainActivity extends Activity implements OnNavigationListener,
 
         // Calculate pot byte to send
         byte mByte = gainToPotValue(2.5/value, true);
-        Log.w("pot B byte", CommandInterface.bytesToHex(new byte[] {mByte}));
+        Log.v("scope", "pot B byte" + CommandInterface.bytesToHex(new byte[] {mByte}));
 
         runCommand(new Command((byte) 0x08, new byte[] {mByte}, 0, new CommandInterface.CommandCallback() {
             @Override
@@ -772,7 +779,11 @@ public class MainActivity extends Activity implements OnNavigationListener,
     @Override
     protected void onStop() {
         // Unregister bluetooth IntentReceiver
-        unregisterReceiver(mReceiver);
+        try {
+            unregisterReceiver(mReceiver);
+        } catch (IllegalArgumentException e) {
+            Log.v("scope", "receiver IllegalArgumentException");
+        }
         super.onStop();
     }
 }

@@ -88,7 +88,7 @@ public class ControlsFragment extends Fragment {
             // When user has finished sliding the seekbar, call interface
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                Log.w("scope", "onstoptrackingtouch");
+                Log.v("scope", "onstoptrackingtouch");
                 mCallback.onTimeSampleChanged(getTimeDiv());
             }
         });
