@@ -1,7 +1,5 @@
 package com.harryrickards.bioniscope;
 
-import android.util.Log;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -49,8 +47,7 @@ public class CommandInterface {
         while (bufferPosition < command.inDataLength) {
             int bytesAvailable = mInputStream.available();
             if (bytesAvailable > 0) {
-                mInputStream.read(buffer, bufferPosition, Math.min(bytesAvailable,command.inDataLength-bufferPosition));
-                bufferPosition += bytesAvailable;
+                bufferPosition += mInputStream.read(buffer, bufferPosition, Math.min(bytesAvailable,command.inDataLength-bufferPosition));
             }
         }
         // Read newline to finish command

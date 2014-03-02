@@ -6,7 +6,6 @@ import android.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.LinearLayout;
 
 import com.jjoe64.graphview.CustomLabelFormatter;
@@ -70,7 +69,6 @@ public class DigitalFragment extends Fragment {
 
     public void setData(byte[] xData) {
         // To force straighter lines, we add 2 graph points for each data points
-        // TODO Do this in a less hackish way
         double ghost = 0.01;
 
         for (int j=0; j<8; j++) {
@@ -82,6 +80,7 @@ public class DigitalFragment extends Fragment {
             // value
             for (int i=0; i<xData.length; i++) {
                 int xdi = xData[i];
+                // jth bit + offset
                 int yVal = ((xdi>>j)&0x01)+j*3;
                 data[2*i] = new GraphView.GraphViewData(mTimeSample*i, yVal);
             }

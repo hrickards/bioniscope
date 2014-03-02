@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.app.FragmentTransaction;
 import android.app.ActionBar;
@@ -36,7 +37,8 @@ public class MainActivity extends Activity implements OnNavigationListener,
         DigitalControlsFragment.OnDigitalControlChangedListener,
         DigitalFragment.OnDigitalActionInterface {
 
-    // TODO All scales on graphs
+    // TODO Titles on graph axes
+    // Increase bluetooth baud rate
 
     // Bluetooth
     BluetoothAdapter mBluetoothAdapter;
@@ -63,7 +65,11 @@ public class MainActivity extends Activity implements OnNavigationListener,
     int currentFragment = -1;
 
     // Calibration constants
+    // TODO Move these to be calibrated
     final static double DIGITAL_TIME_SAMPLE_OFFSET = 1.6;
+    final static double ANALOGUE_TIME_SAMPLE_OFFSET = 0;
+
+    // TODO Log only if development enabled
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,10 +87,10 @@ public class MainActivity extends Activity implements OnNavigationListener,
 
         // Show connection status to user
         connectionStatus = (TextView) findViewById(R.id.connectionStatus);
-        connectionStatus.setText(getString(R.string.connecting));
+        disconnectButton = (Button) findViewById(R.id.disconnectButton);
+        onConnectionConnecting();
 
         // Disconnect when disconnect button clicked
-        disconnectButton = (Button) findViewById(R.id.disconnectButton);
         disconnectButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -94,8 +100,6 @@ public class MainActivity extends Activity implements OnNavigationListener,
                     disconnectBluetooth();
                 // Otherwise if currently disconnected
                 } else {
-                    // Hide button while connecting
-                    disconnectButton.setVisibility(View.INVISIBLE);
                     // Connect to Bluetooth
                     setupBluetooth();
                 }
@@ -149,7 +153,7 @@ public class MainActivity extends Activity implements OnNavigationListener,
 
     private  void setupBluetooth() {
         // Set status text to connecting
-        connectionStatus.setText(getString(R.string.connecting));
+        onConnectionConnecting();
 
         // Enable bluetooth if not enabled
         if (!mBluetoothAdapter.isEnabled()) {
@@ -177,10 +181,7 @@ public class MainActivity extends Activity implements OnNavigationListener,
         @Override
         protected void onPostExecute(Void args) {
             if (e != null) {
-                // Show button
-                disconnectButton.setVisibility(View.VISIBLE);
-                connectionStatus.setText(getString(R.string.connection_failed));
-                disconnectButton.setText(getString(R.string.connect));
+                onConnectionFailed();
             }
         }
     }
@@ -210,9 +211,8 @@ public class MainActivity extends Activity implements OnNavigationListener,
         mDevice = null;
 
         // Change disconnect button text to connect
-        disconnectButton.setText(getString(R.string.connect));
         // Change status text to disconnected
-        connectionStatus.setText(getString(R.string.disconnected));
+        onConnectionDisconnected();
     }
 
 
@@ -236,7 +236,11 @@ public class MainActivity extends Activity implements OnNavigationListener,
                 // TODO Allow user to set name to check against
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 Log.w("scope", "FOUND " + device.getName() + " " + device.getAddress());
-                if (device.getName().equals("HC-06")) {
+
+                String wantedName = "HC-06";
+                Log.w("scope", "SEARCHING FOR " + device.getName());
+
+                if (device.getName().equals(wantedName)) {
                     // So we know we've found something
                     mDevice = device;
 
@@ -255,9 +259,7 @@ public class MainActivity extends Activity implements OnNavigationListener,
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            disconnectButton.setVisibility(View.VISIBLE);
-                            connectionStatus.setText(getString(R.string.connection_failed));
-                            disconnectButton.setText(getString(R.string.connect));
+                            onConnectionFailed();
                         }
                     });
                 }
@@ -279,40 +281,49 @@ public class MainActivity extends Activity implements OnNavigationListener,
             mCommandInterface = new CommandInterface(mOutputStream, mInputStream);
         } catch (IOException e) {
             Log.w("scope", "bluetooth IO exception");
-            disconnectButton.setVisibility(View.VISIBLE);
-            connectionStatus.setText(getString(R.string.connection_failed));
-            disconnectButton.setText(getString(R.string.connect));
+            onConnectionFailed();
         }
 
 
         // TODO Send default values (before requesting sample)
 
         // Request a sample based on the mode we're currently in
-        switch (currentFragment) {
-            case SPECTRUM_FRAGMENT:
-                onSpectrumSampleRequested();
-                break;
-
-            case DIGITAL_FRAGMENT:
-                onDigitalSampleRequested();
-                break;
-
-            // GRAPH_FRAGMENT
-            default:
-                onSampleRequested();
-                break;
-        }
+        onRelevantSampleRequested();
 
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                // Show button
-                disconnectButton.setVisibility(View.VISIBLE);
-                // No exceptions and device found
-                connectionStatus.setText(getString(R.string.connected));
-                disconnectButton.setText(getString(R.string.disconnect));
+                // Show button and set text
+                onConnectionConnected();
             }
         });
+    }
+
+    protected void onConnectionFailed() {
+        disconnectButton.setText(getString(R.string.connect));
+        disconnectButton.setVisibility(View.VISIBLE);
+        connectionStatus.setTextColor(Color.RED);
+        connectionStatus.setText(getString(R.string.connection_failed));
+    }
+
+    protected void onConnectionConnecting() {
+        disconnectButton.setVisibility(View.INVISIBLE);
+        connectionStatus.setTextColor(Color.BLACK);
+        connectionStatus.setText(getString(R.string.connecting));
+    }
+
+    protected void onConnectionDisconnected() {
+        disconnectButton.setVisibility(View.VISIBLE);
+        disconnectButton.setText(getString(R.string.connect));
+        connectionStatus.setTextColor(Color.BLACK);
+        connectionStatus.setText(getString(R.string.disconnected));
+    }
+
+    protected void onConnectionConnected() {
+        disconnectButton.setVisibility(View.VISIBLE);
+        disconnectButton.setText(getString(R.string.disconnect));
+        connectionStatus.setTextColor(Color.parseColor("#ff669900")); // Holo green
+        connectionStatus.setText(getString(R.string.connected));
     }
 
     @Override
@@ -373,94 +384,6 @@ public class MainActivity extends Activity implements OnNavigationListener,
         return false;
     }
 
-    // Save controls permanently & in current app instance (persistent across rotation)
-    // Based on SO#151777
-    /*
-    @Override
-    protected void onPause() {
-        super.onPause();
-
-        // Store in SharedPreferences
-        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
-        Editor editor = preferences.edit();
-
-        editor.putBoolean(TRACE_ONE_ENABLED, traceOneEnabled);
-        editor.putBoolean(TRACE_TWO_ENABLED, traceTwoEnabled);
-        putDouble(editor, TRACE_ONE_VOLTS_DIV, traceOneVoltsDiv);
-        putDouble(editor, TRACE_TWO_VOLTS_DIV, traceTwoVoltsDiv);
-        putDouble(editor, TIME_DIV, timeDiv);
-
-        editor.commit();
-    }
-
-
-    // SharedPreferences doesn't support doubles by default, hence these workarounds
-    // Copied from copolli @ SO 16319237
-    Editor putDouble(final Editor edit, final String key, final double value) {
-        return edit.putLong(key, Double.doubleToRawLongBits(value));
-    }
-
-    double getDouble(final SharedPreferences prefs, final String key, final double defaultValue) {
-        return Double.longBitsToDouble(prefs.getLong(key, Double.doubleToLongBits(defaultValue)));
-    }
-
-    // Retrieve controls saved in onPause
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
-        traceOneEnabled = preferences.getBoolean(TRACE_ONE_ENABLED, true);
-        traceTwoEnabled = preferences.getBoolean(TRACE_TWO_ENABLED, true);
-        traceOneVoltsDiv = getDouble(preferences, TRACE_ONE_VOLTS_DIV, 1.0);
-        traceTwoVoltsDiv = getDouble(preferences, TRACE_TWO_VOLTS_DIV, 2.0);
-        timeDiv = getDouble(preferences, TIME_DIV, 1.0);
-
-        // setControls();
-    }
-
-    // Interface methods for when controls are changed
-    public void onTraceOneToggled(boolean enabled) {
-        traceOneEnabled = enabled;
-    }
-    public void onTraceTwoToggled(boolean enabled) {
-        traceTwoEnabled = enabled;
-    }
-    public void onTraceOneVoltsDivChanged(double value) {
-        traceOneVoltsDiv = value;
-        // Update y bounds of graph
-        // updateGraphYBounds();
-    }
-    public void onTraceTwoVoltsDivChanged(double value) {
-        traceTwoVoltsDiv = value;
-        // Update y bounds of graph
-        // updateGraphYBounds();
-    }
-    public void onTimeDivChanged(double value) {
-        timeDiv = value;
-    }
-    */
-
-    //public void updateGraphYBounds() {
-        // Use the maximum volts/div out of traces one and two
-        //double voltsDiv = (traceOneVoltsDiv > traceTwoVoltsDiv) ? traceOneVoltsDiv : traceTwoVoltsDiv;
-       // if (mGraphFragment != null && currentFragment == GRAPH_FRAGMENT) {
-            //mGraphFragment.setYBounds(-voltsDiv*10, voltsDiv*10);
-       // }
-    //}
-
-    // Set values of controls
-    /*public void setControls() {
-        ControlsFragment controlsFragment = (ControlsFragment)
-                getSupportFragmentManager().findFragmentById(R.id.controlsFragment);
-        controlsFragment.setTraceOneEnabled(traceOneEnabled);
-        controlsFragment.setTraceTwoEnabled(traceTwoEnabled);
-        controlsFragment.setTraceOneVoltsDiv(traceOneVoltsDiv);
-        controlsFragment.setTraceTwoVoltsDiv(traceTwoVoltsDiv);
-        controlsFragment.setTimeDiv(timeDiv);
-        updateGraphYBounds();
-    }*/
-
     // Switch to graph view
     public void switchToGraph() {
         if (mGraphFragment == null) {
@@ -476,7 +399,7 @@ public class MainActivity extends Activity implements OnNavigationListener,
         transaction1.commit();
 
         // Sample
-        onSampleRequested();
+        sampleGraph();
 
         if (!(currentFragment == GRAPH_FRAGMENT || currentFragment == SPECTRUM_FRAGMENT)) {
             FragmentTransaction transaction2 = getFragmentManager().beginTransaction();
@@ -521,7 +444,7 @@ public class MainActivity extends Activity implements OnNavigationListener,
         transaction1.commit();
 
         // Sample
-        onSpectrumSampleRequested();
+        sampleSpectrum();
 
         if (!(currentFragment == GRAPH_FRAGMENT || currentFragment == SPECTRUM_FRAGMENT)) {
             FragmentTransaction transaction2 = getFragmentManager().beginTransaction();
@@ -533,6 +456,10 @@ public class MainActivity extends Activity implements OnNavigationListener,
 
     // Digital sample requested
     public void onDigitalSampleRequested() {
+        if (mDigitalControlsFragment != null) {
+            mDigitalControlsFragment.setSampleButtonEnabled(false);
+        }
+
         // Run command to get data
         Command command = new Command((byte) 0x02, new byte[] {}, 1024, new CommandInterface.CommandCallback() {
             public void commandFinished(byte[] data) {
@@ -543,6 +470,7 @@ public class MainActivity extends Activity implements OnNavigationListener,
                         if (mDigitalFragment != null) {
                             mDigitalFragment.setData(mData);
                         }
+                        mDigitalControlsFragment.setSampleButtonEnabled(true);
                     }
                 });
             }
@@ -552,79 +480,107 @@ public class MainActivity extends Activity implements OnNavigationListener,
 
     // Analogue sample requested
     public void onSampleRequested() {
+        // If we're in the right fragment
+        if (currentFragment == GRAPH_FRAGMENT) {
+            sampleGraph();
+        } else {
+            // Otherwise switch to it
+            getActionBar().setSelectedNavigationItem(GRAPH_FRAGMENT);
+        }
+    }
+
+    protected void sampleGraph() {
         if (mControlsFragment != null && mControlsFragment.traceOneEnabled()) {
+            mControlsFragment.setSampleButtonOneEnabled(false);
             // Run command to get data from channel A
-            runCommand(new Command((byte) 0x00, new byte[] {}, 1024, new CommandInterface.CommandCallback() {
-            public void commandFinished(byte[] data) {
+            runCommand(new Command((byte) 0x00, new byte[]{}, 1024, new CommandInterface.CommandCallback() {
+                public void commandFinished(byte[] data) {
                     final byte[] mData = data;
                     runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        // Check to see if trace status has changed since we asked for data
-                        if (mGraphFragment != null && mControlsFragment.traceOneEnabled()) {
+                        @Override
+                        public void run() {
+                            // Check to see if trace status has changed since we asked for data
+                            if (mGraphFragment != null && mControlsFragment.traceOneEnabled()) {
                                 mGraphFragment.setData(mData, false);
                             }
+                            mControlsFragment.setSampleButtonOneEnabled(true);
                         }
-                });
+                    });
                 }
-        }));
+            }));
         }
 
         if (mControlsFragment != null && mControlsFragment.traceTwoEnabled()) {
+            mControlsFragment.setSampleButtonTwoEnabled(false);
             // Run command to get data from channel B
             runCommand(new Command((byte) 0x01, new byte[] {}, 1024, new CommandInterface.CommandCallback() {
-            public void commandFinished(byte[] data) {
+                public void commandFinished(byte[] data) {
                     final byte[] mData = data;
                     runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        // Check to see if trace status has changed since we asked for data
-                        if (mGraphFragment != null && mControlsFragment.traceTwoEnabled()) {
+                        @Override
+                        public void run() {
+                            // Check to see if trace status has changed since we asked for data
+                            if (mGraphFragment != null && mControlsFragment.traceTwoEnabled()) {
                                 mGraphFragment.setData(mData, true);
                             }
+                            mControlsFragment.setSampleButtonTwoEnabled(true);
                         }
-                });
+                    });
                 }
-        }));
+            }));
         }
     }
 
     // Spectrum sample requested
     public void onSpectrumSampleRequested() {
+        // If we're in the right fragment
+        if (currentFragment == SPECTRUM_FRAGMENT) {
+            sampleSpectrum();
+        } else {
+            // Otherwise switch to spectrum fragment
+            getActionBar().setSelectedNavigationItem(SPECTRUM_FRAGMENT);
+        }
+    }
+
+    protected void sampleSpectrum() {
         if (mControlsFragment != null && mControlsFragment.traceOneEnabled()) {
+            mControlsFragment.setSpectrumSampleButtonOneEnabled(false);
             // Run command to get data from channel A
             runCommand(new Command((byte) 0x00, new byte[] {}, 1024, new CommandInterface.CommandCallback() {
-            public void commandFinished(byte[] data) {
+                public void commandFinished(byte[] data) {
                     final byte[] mData = data;
                     runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
+                        @Override
+                        public void run() {
                             // Check to see if trace status has changed since we asked for data
                             if (mSpectrumFragment != null && mControlsFragment.traceOneEnabled()) {
                                 mSpectrumFragment.setData(mData, false);
                             }
+                            mControlsFragment.setSpectrumSampleButtonOneEnabled(true);
                         }
-                });
+                    });
                 }
-        }));
+            }));
         }
 
         if (mControlsFragment != null && mControlsFragment.traceTwoEnabled()) {
+            mControlsFragment.setSpectrumSampleButtonTwoEnabled(false);
             // Run command to get data from channel B
             runCommand(new Command((byte) 0x01, new byte[] {}, 1024, new CommandInterface.CommandCallback() {
-            public void commandFinished(byte[] data) {
-                final byte[] mData = data;
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        // Check to see if trace status has changed since we asked for data
-                        if (mSpectrumFragment != null && mControlsFragment.traceTwoEnabled()) {
-                            mSpectrumFragment.setData(mData, true);
+                public void commandFinished(byte[] data) {
+                    final byte[] mData = data;
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            // Check to see if trace status has changed since we asked for data
+                            if (mSpectrumFragment != null && mControlsFragment.traceTwoEnabled()) {
+                                mSpectrumFragment.setData(mData, true);
+                            }
+                            mControlsFragment.setSpectrumSampleButtonTwoEnabled(true);
                         }
-                    }
-                });
+                    });
                 }
-        }));
+            }));
         }
     }
 
@@ -653,9 +609,12 @@ public class MainActivity extends Activity implements OnNavigationListener,
         if (mGraphFragment != null) {
             mGraphFragment.setTimeSample(timeSample);
         }
+        if (mSpectrumFragment != null) {
+            mSpectrumFragment.setTimeSample(timeSample);
+        }
 
         Log.w("analogue time sample", Double.toString(timeSample));
-        int timeDelay = (int) Math.floor(timeSample);
+        int timeDelay = (int) Math.floor(timeSample - ANALOGUE_TIME_SAMPLE_OFFSET);
         if (timeDelay < 0) { timeDelay = 0; }
         Log.w("analogue time delay", Integer.toString(timeDelay));
 
@@ -664,13 +623,13 @@ public class MainActivity extends Activity implements OnNavigationListener,
         Log.w("analogue time delay bytes", CommandInterface.bytesToHex(commandData));
         Command command = new Command((byte) 0x11, commandData, 0, new CommandInterface.CommandCallback() {
             public void commandFinished(byte[] data) {
-                onSampleRequested();
+                onRelevantAnalogueSampleRequested();
             }
         });
         runCommand(command);
     }
 
-    protected void onRelevantAnalogSampleRequested() {
+    protected void onRelevantAnalogueSampleRequested() {
         switch (currentFragment) {
             case GRAPH_FRAGMENT:
                 onSampleRequested();
@@ -678,6 +637,23 @@ public class MainActivity extends Activity implements OnNavigationListener,
 
             case SPECTRUM_FRAGMENT:
                 onSpectrumSampleRequested();
+                break;
+        }
+    }
+
+    protected void onRelevantSampleRequested() {
+        switch (currentFragment) {
+            case SPECTRUM_FRAGMENT:
+                onSpectrumSampleRequested();
+                break;
+
+            case DIGITAL_FRAGMENT:
+                onDigitalSampleRequested();
+                break;
+
+            // GRAPH_FRAGMENT
+            default:
+                onSampleRequested();
                 break;
         }
     }
@@ -695,8 +671,8 @@ public class MainActivity extends Activity implements OnNavigationListener,
                 mSpectrumFragment.hideTraceOne();
             }
         }
-        onRelevantAnalogSampleRequested();
-    };
+        onRelevantAnalogueSampleRequested();
+    }
     public void onTraceTwoToggled(boolean value) {
         // If disabling, we need to stop showing the trace
         if (!value) {
@@ -707,8 +683,8 @@ public class MainActivity extends Activity implements OnNavigationListener,
                 mSpectrumFragment.hideTraceTwo();
             }
         }
-        onRelevantAnalogSampleRequested();
-    };
+        onRelevantAnalogueSampleRequested();
+    }
 
     public void onTraceOneVoltsDivChanged(double value) {
         if (mGraphFragment != null) {
@@ -724,7 +700,7 @@ public class MainActivity extends Activity implements OnNavigationListener,
             public void commandFinished(byte[] data) {
             }
         }));
-    };
+    }
     public void onTraceTwoVoltsDivChanged(double value) {
         if (mGraphFragment != null) {
             mGraphFragment.setVoltsRangeB(value);
@@ -739,7 +715,7 @@ public class MainActivity extends Activity implements OnNavigationListener,
             public void commandFinished(byte[] data) {
             }
         }));
-    };
+    }
 
     // Convert an amplifier gain and address to a pot value to send
     public byte gainToPotValue(double gain, boolean address) {

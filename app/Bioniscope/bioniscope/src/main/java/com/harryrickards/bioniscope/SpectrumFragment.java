@@ -21,6 +21,7 @@ import java.util.Arrays;
 public class SpectrumFragment extends Fragment {
     GraphView mGraphView;
     GraphViewSeries mSeriesA, mSeriesB;
+    double timeSample = 1;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -73,16 +74,15 @@ public class SpectrumFragment extends Fragment {
 
         // We only care about the first N/2 entries as we're only dealing with real frequencies
         double values[] = new double[512];
-        for (int i=0; i<values.length; i++) {
-            values[i] = magnitudes[i];
-        }
+        System.arraycopy(magnitudes, 0, values, 0, values.length);
 
         // Add results to a GraphViewData array
         GraphView.GraphViewData[] data = new GraphView.GraphViewData[values.length];
         for (int i=0; i<data.length; i++) {
             // f = i * Fs / N
-            // TODO Improve accuracy of Fs
+            // TODO Move this to be calibrated
             double frequency = i*180000.0/1024.0;
+            // TODO y scale
             data[i] = new GraphView.GraphViewData(frequency, values[i]);
         }
 
@@ -98,4 +98,8 @@ public class SpectrumFragment extends Fragment {
 
     public void hideTraceOne() {mSeriesA.resetData(new GraphView.GraphViewData[] {});}
     public void hideTraceTwo() {mSeriesB.resetData(new GraphView.GraphViewData[] {});}
+
+    public void setTimeSample(double mTimeSample) {
+        timeSample = mTimeSample;
+    }
 }

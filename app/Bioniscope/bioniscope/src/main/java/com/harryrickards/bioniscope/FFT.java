@@ -59,7 +59,7 @@ public class FFT {
         }
 
         // FFT
-        n1 = 0;
+        // n1 = 0;
         n2 = 1;
 
         for (i = 0; i < m; i++) {

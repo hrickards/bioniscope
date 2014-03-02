@@ -17,6 +17,7 @@ public class DigitalControlsFragment extends Fragment {
     OnDigitalControlChangedListener mCallback;
     SeekBar timeSampleSlider;
     TextView timeSampleLabel;
+    Button captureButton;
     double mTimeSample;
 
     final static double MIN_TIME_SAMPLE = 2;
@@ -31,7 +32,7 @@ public class DigitalControlsFragment extends Fragment {
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
-        Button captureButton = (Button) view.findViewById(R.id.digitalCaptureButton);
+        captureButton = (Button) view.findViewById(R.id.digitalCaptureButton);
         captureButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -77,7 +78,6 @@ public class DigitalControlsFragment extends Fragment {
         }
         timeSampleLabel.setText(Double.toString(timeSample) + "us");
     }
-    protected void setTimeSample(double timeSample) {setTimeSample(timeSample, false); };
 
     protected int timeSampleToSlider(double timeSample) {
         return (int) (100*(timeSample-MIN_TIME_SAMPLE)/(MAX_TIME_SAMPLE-MIN_TIME_SAMPLE));
@@ -85,6 +85,13 @@ public class DigitalControlsFragment extends Fragment {
 
     protected double sliderToTimeSample(int sliderValue) {
         return (MIN_TIME_SAMPLE + sliderValue*(MAX_TIME_SAMPLE-MIN_TIME_SAMPLE)/100);
+    }
+
+    // Grey out sample button
+    public void setSampleButtonEnabled(boolean enabled) {
+        if (captureButton != null) {
+            captureButton.setEnabled(enabled);
+        }
     }
 
 

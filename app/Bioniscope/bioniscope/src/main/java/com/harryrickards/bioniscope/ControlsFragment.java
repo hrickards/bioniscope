@@ -3,19 +3,13 @@ package com.harryrickards.bioniscope;
 import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
-import android.os.Trace;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import com.harryrickards.bioniscope.SI;
-
-import org.w3c.dom.Text;
 
 /**
  * Fragment for controlling scope settings
@@ -27,7 +21,14 @@ public class ControlsFragment extends Fragment {
     TextView timeDivFrequency;
     TextView timeDivPeriod;
     SeekBar timeDivSlider;
+    Button captureButton;
+    Button spectrumCaptureButton;
     double timeSample;
+
+    boolean sampleButtonOneEnabled = true;
+    boolean sampleButtonTwoEnabled = true;
+    boolean spectrumSampleButtonOneEnabled = true;
+    boolean spectrumSampleButtonTwoEnabled = true;
 
     final static double MIN_TIME_SAMPLE = 1;
     final static double MAX_TIME_SAMPLE = 101;
@@ -92,14 +93,14 @@ public class ControlsFragment extends Fragment {
         timeDivFrequency = (TextView) getView().findViewById(R.id.timeDivFrequency);
 
         // Button to sample
-        Button captureButton = (Button) view.findViewById(R.id.captureButton);
+        captureButton = (Button) view.findViewById(R.id.captureButton);
         captureButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mCallback.onSampleRequested();
             }
         });
-        Button spectrumCaptureButton = (Button) view.findViewById(R.id.spectrumCaptureButton);
+        spectrumCaptureButton = (Button) view.findViewById(R.id.spectrumCaptureButton);
         spectrumCaptureButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -168,4 +169,31 @@ public class ControlsFragment extends Fragment {
     public boolean traceOneEnabled() {return (traceOne == null) || traceOne.traceEnabled();}
     public boolean traceTwoEnabled() {return (traceTwo == null) || traceTwo.traceEnabled();}
 
+    // Grey out sample button
+    public void setSampleButtonOneEnabled(boolean enabled) {
+        sampleButtonOneEnabled = enabled;
+        updateSampleButtonEnabled();
+    }
+    public void setSampleButtonTwoEnabled(boolean enabled) {
+        sampleButtonTwoEnabled = enabled;
+        updateSampleButtonEnabled();
+    }
+    protected void updateSampleButtonEnabled() {
+        if (captureButton != null) {
+            captureButton.setEnabled(sampleButtonOneEnabled && sampleButtonTwoEnabled);
+        }
+    }
+    public void setSpectrumSampleButtonOneEnabled(boolean enabled) {
+        spectrumSampleButtonOneEnabled = enabled;
+        updateSpectrumSampleButtonEnabled();
+    }
+    public void setSpectrumSampleButtonTwoEnabled(boolean enabled) {
+        spectrumSampleButtonTwoEnabled = enabled;
+        updateSpectrumSampleButtonEnabled();
+    }
+    protected void updateSpectrumSampleButtonEnabled() {
+        if (spectrumCaptureButton != null) {
+            spectrumCaptureButton.setEnabled(spectrumSampleButtonOneEnabled && spectrumSampleButtonTwoEnabled);
+        }
+    }
 }

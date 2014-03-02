@@ -3,16 +3,12 @@ package com.harryrickards.bioniscope;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
-import com.jjoe64.graphview.CustomLabelFormatter;
 import com.jjoe64.graphview.GraphView;
-import com.jjoe64.graphview.GraphViewDataInterface;
 import com.jjoe64.graphview.GraphViewSeries;
 import com.jjoe64.graphview.LineGraphView;
 
@@ -62,32 +58,8 @@ public class GraphFragment extends Fragment {
         mGraphView.addSeries(mSeriesA);
         mGraphView.addSeries(mSeriesB);
 
-        // Format labels with SI prefixes
-        /*
-        mGraphView.setCustomLabelFormatter(new CustomLabelFormatter() {
-            @Override
-            public String formatLabel(double value, boolean isValueX) {
-                String units = isValueX ? "s" : "V";
-                String prefix;
-                if (value > 1e-4) { prefix = "+"; }
-                else if (value > -1e-4) { prefix = " "; }
-                else { prefix = ""; }
-
-                return prefix + SI.formatSI(value) + units;
-            }
-        });
-        */
-
         LinearLayout graphLayout = (LinearLayout) getView().findViewById(R.id.graph);
         graphLayout.addView(mGraphView);
-    }
-
-    // Set the vertical bounds of the graph
-    protected void setYBounds(double lowerBound, double upperBound) {
-        /*
-        mGraphView.setManualYAxisBounds(upperBound, lowerBound);
-        mGraphView.redrawAll();
-        */
     }
 
     // B iff channel, else A
@@ -106,6 +78,7 @@ public class GraphFragment extends Fragment {
         for (int i=0; i<xData.length; i++) {
             // Bytes are unsigned, so to convert into a positive int we have to take the absolute
             // value
+            // TODO Move these to be calibrated
             data[i] = new GraphView.GraphViewData(i*timeSample, (Math.abs((int) xData[i])-127.5)*2*voltsRange/255.0);
         }
 
