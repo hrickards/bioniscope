@@ -7,4 +7,5 @@ typedef unsigned char Byte;
   extern int DigitalTimeDelay;
   extern Byte DigitalTriggerThreshold;
   extern Byte DigitalTriggerType;
+  extern Byte AnalogueSampleChannels;
 #endif

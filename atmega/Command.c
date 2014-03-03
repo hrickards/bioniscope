@@ -50,6 +50,11 @@ void ReceiveCommand(void) {
       Data2 = BTUSARTRead();
       break;
 
+    // Set which analogue channels to sample
+    case 0x09:
+      Data1 = BTUSARTRead();
+      break;
+
     default:
         break;
   }
@@ -142,8 +147,10 @@ void CommandRun(void) {
     // 0x07 Analogue trigger threshold
     // 0x05 Better digital triggering
 
-    // TODO
-    // 0x09 Look at bits 0 and 1 in Data1 to enable/disable channels
+    // Look at bits 0 and 1 in Data1 to enable/disable analogue channels
+    case 0x09:
+      AnalogueSampleChannels = Data1;
+      break;
 
     // Return error
     default:

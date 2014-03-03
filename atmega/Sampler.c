@@ -70,9 +70,37 @@ void SamplerSample(void) {
   // TODO Analogue triggering
 
   // Take analogue samples using the functions in ADC.c
-  for (i=0; i<NUM_SAMPLES; i++) {
-    AnalogueSamplesA[i] = ADCSample(0x00);
-    AnalogueSamplesB[i] = ADCSample(0xFF);
-    delay_us(AnalogueTimeDelay);
+  // The four different cases based upon the value of AnalogueSampleChannels
+  
+  // Channel A enabled based on bit 0
+  Byte aEnabled = AnalogueSampleChannels & 0x01;
+  // Channel B enabled based on bit 1
+  Byte bEnabled = AnalogueSampleChannels & 0x02;
+
+  // A enabled and B enabled
+  if (aEnabled && bEnabled) {
+    for (i=0; i<NUM_SAMPLES; i++) {
+      AnalogueSamplesA[i] = ADCSample(0x00);
+      AnalogueSamplesB[i] = ADCSample(0xFF);
+      delay_us(AnalogueTimeDelay);
+    }
+  // A enabled and B not enabled
+  } else if (aEnabled) {
+    for (i=0; i<NUM_SAMPLES; i++) {
+      AnalogueSamplesA[i] = ADCSample(0x00);
+      delay_us(AnalogueTimeDelay);
+    }
+  // B enabled and A not enabled
+  } else if (bEnabled) {
+    for (i=0; i<NUM_SAMPLES; i++) {
+      AnalogueSamplesB[i] = ADCSample(0xFF);
+      delay_us(AnalogueTimeDelay);
+    }
+  // Error: neither channel enabled
+  } else {
+    for (i=0; i<NUM_SAMPLES; i++) {
+      AnalogueSamplesA[i] = 0x00;
+      AnalogueSamplesB[i] = 0xFF;
+    }
   }
 }
