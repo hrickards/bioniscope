@@ -36,11 +36,13 @@ void ReceiveCommand(void) {
     // Set digital trigger threshold
     case 0x0D:
       Data1 = BTUSARTRead();
+      break;
 
     // Set type of digital trigger
     // See Sampler.c
     case 0x0F:
       Data1 = BTUSARTRead();
+      break;
 
     // Set time delay between analogue samples
     case 0x11:
@@ -113,8 +115,6 @@ void CommandRun(void) {
       BTUSARTTransmit(AnalogueTimeDelay & 0xFF);
       break;
 
-
-
     // Set the digital trigger threshold
     case 0x0D:
       DigitalTriggerThreshold = Data1;
@@ -135,6 +135,15 @@ void CommandRun(void) {
     case 0x10:
       BTUSARTTransmit(DigitalTriggerType);
       break;
+
+    // TODO Triggering
+    // 0x03 Set analogue trigger to channel A
+    // 0x04 Set analogue trigger to channel B
+    // 0x07 Analogue trigger threshold
+    // 0x05 Better digital triggering
+
+    // TODO
+    // 0x09 Look at bits 0 and 1 in Data1 to enable/disable channels
 
     // Return error
     default:

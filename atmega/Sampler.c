@@ -67,6 +67,8 @@ void SamplerSample(void) {
     }
   }
 
+  // TODO Analogue triggering
+
   // Take analogue samples using the functions in ADC.c
   for (i=0; i<NUM_SAMPLES; i++) {
     AnalogueSamplesA[i] = ADCSample(0x00);
