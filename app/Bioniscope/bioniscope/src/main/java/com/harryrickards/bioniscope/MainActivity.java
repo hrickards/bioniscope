@@ -693,10 +693,34 @@ public class MainActivity extends Activity implements OnNavigationListener,
         }
     }
 
-    // TODO Toggle capturing the channels when we're not displaying them
+    // Tell the electronics which traces are enabled
+    public void sendTraceCommand() {
+        if (mControlsFragment != null) {
+            byte control = 0x00;
+
+            // Set bits 0 and 1
+            if (mControlsFragment.traceOneEnabled()) {
+                control |= 0x01;
+            }
+            if (mControlsFragment.traceTwoEnabled()) {
+                control |= 0x01<<1;
+            }
+
+            runCommand(new Command((byte) 0x09, new byte[] {control}, 0, new CommandInterface.CommandCallback() {
+                    @Override
+                    public void commandFinished(byte[] data) {
+                        Log.v("scope", "trace enable command complete.");
+                    }
+            }));
+        }
+    }
+
     // We don't need to capture these here as we just call mControlsFragment.traceXEnabled() when
     // needed
     public void onTraceOneToggled(boolean value) {
+        // Send relevant command byte
+        sendTraceCommand();
+
         // If disabling, we need to stop showing the trace
         if (!value) {
             if (mGraphFragment != null) {
@@ -709,6 +733,9 @@ public class MainActivity extends Activity implements OnNavigationListener,
         onRelevantAnalogueSampleRequested();
     }
     public void onTraceTwoToggled(boolean value) {
+        // Send relevant command byte
+        sendTraceCommand();
+
         // If disabling, we need to stop showing the trace
         if (!value) {
             if (mGraphFragment != null) {
