@@ -527,19 +527,10 @@ in~\cref{fig:microcontrollerCircuitDiagram}.
 \subsubsection{Programming}
 
 To program the chip, an AVR programmer must be used (and connected to the ISP
-header as detailed above). These are available very cheaply (such as the USBASP
-for \pounds 5 from eBay), but an Arduino (essentially a microcontroller
-development board) can also be used, as shown in~\cref{fig:arduino_programmer}.
-As this author had a spare Arduino, this option was used.
-
-\begin{figure}
-  \centering
-  \includegraphics[width=0.5\textwidth]{img/microcontroller/arduino_programmer.png}
-  \label{fig:arduino_programmer}
-  \caption[Arduino as a Programmer]{Breadboard diagram produced by~\textcite{ArduinoProgrammer} showing
-  the programming and power connections between an Arduino and an ATMega328}
-\end{figure}
-
+header as detailed above). As this author already had a USBASP programmer
+(approximately \pounds 5 from eBay), this was used. Alternatively, an Arduino (a
+very popular microcontroller prototyping board) can be connected to program AVR
+chips.
 
 \subsubsection{Serial Interface}
 
@@ -567,9 +558,8 @@ those characters. For example, 65 below corresponds to a capital `A'.
   \item[\texttt{0x01}] Return all samples for the second analogue channel (1024
   bytes, followed by a newline)
 
-  \item[\texttt{0x02}] Wait for the next transmitted byte, $X$, and return all
-  values for the $X$th digital channel (1024 bits = 128 bytes, followed by a
-  newline)
+  \item[\texttt{0x02}] Return all digital samples (1024 bytes, with each byte
+    representing all 8 samples at one timepoint, followed by a newline)
 
   \item[\texttt{0x03}] Use analogue channel 1 to trigger (returns a newline)
 
@@ -581,23 +571,42 @@ those characters. For example, 65 below corresponds to a capital `A'.
   \item[\texttt{0x06}] Wait for the next two transmitted bytes, $X$ and $Y$ and
   use $XY$\footnote{For example, if $X = \texttt{0x50}$ and $Y=\texttt{0x1A}$
   then use \texttt{0x501A} as the delay} as the number of microseconds to pause
-  in between samples (returns a newline)
+  in between digital samples (returns a newline)
 
   \item[\texttt{0x07}] Wait for the next transmitted byte, $X$, and use $X$ as
-  the analogue trigger threshold (returnsa  newline)
+  the analogue trigger threshold (returns a newline)
 
   \item[\texttt{0x08}] Wait for the next transmitted byte, $X$, and use the 7
   least significant bits of $X$ as the digital pot value in an amplifier (if the
   most significant bit of $X$ is high, the second amplifier circuit, otherwise
   the first amplifier circuit) (returns a newline)
 
-  \item[\texttt{0x09}] Enable analogue channels 1 and 2 (this means slower
-  sampling) (returns a newline)
+  \item[\texttt{0x09}] Toggle the status of analogue channels 1 and 2, based on
+    the first and second LSBs in the next transmitted byte $X$ (returns a
+    newline)
 
   \item[\texttt{0x0A}] Noop (this is the newline character) (returns a newline)
 
-  \item[\texttt{0x0B}] Enable analogue channel 1 only (faster sampling)
-  sampling) (returns a newline)
+  \item[\texttt{0x0C}] Return the current digital time delay (returns two bytes
+    then a newline)
+
+  \item[\texttt{0x0D}] Set the digital trigger threshold from the next
+    transmitted byte $X$ (returns a newline)
+
+  \item[\texttt{0x0E}] Return the digital trigger threshold (returns a byte then
+    a newline)
+
+  \item[\texttt{0x0F}] Set the type of digital trigger based on the next
+    transmitted byte $X$ (returns a newline)
+
+  \item[\texttt{0x10}] Return the type of digital trigger (returns a data byte
+    then a newline)
+
+  \item[\texttt{0x11}] Set the time delay between analogue samples based on the
+    next two transmitted bytes $X$ and $Y$ (returns a newline)
+
+  \item[\texttt{0x12}] Return the current analogue time delay (returns two bytes
+    then a newline)
 
 \end{description}
 
@@ -675,20 +684,19 @@ the following program:
     \begin{itemize}
       \item Loop 1024 times:
         \begin{itemize}
-          \item Take sample from first analog channel
-          \item Take sample from second analog channel, if enabled
+          \item Take sample from first analogue channel, if enabled
+          \item Take sample from second analogue channel, if enabled
           \item Take 1-bit sample from each digital channel
         \end{itemize}
-      \item Look at most recent serial command, and perform any actions and send
-      any data it specifies
+      \item Look at the most recent serial command, receive up to 2 more bytes
+        depending on the command, and perform any actions and send any data it
+        specifies
       \item Clear most recent serial command
     \end{itemize}
-  \item Interrupt on serial byte received:
-    \begin{itemize}
-      \item Store as most recent serial command
-      \item Receive up to 2 more bytes depending on the command
-    \end{itemize}
 \end{itemize}
+
+ISRs will not be used for serial communication as an oscilloscope is heavily
+reliant on accurate timing --- something that ISRs will interrupt.
 
 There are two main programming languages that can be used for AVR
 microcontrollers: Assembly and C. While Assembly was taught in the course, your
@@ -952,13 +960,4 @@ a 3D printer or a laser cutter. For easy examiner inspection, the enclosure
 needed to be transparent and only coloured plastic filament was available for
 the 3D printer, meaning the laser cutter needed to be used.
 
-Rather than using a traditional 3D CAD tool\footnote{Computer Aided Design tool,
-such as SolidWorks or AutoDesk Inventor}, OpenSCAD was used. This is an open
-source tool that allows 3D objects to be built using \textit{constructive solid
-geometry}\footnote{In essence, this allows objects to be built out of primitive
-  objects. For example, a basic hammer could be built out of a cuboid and a
-cylinder sized and placed appropriately.}. Once the 3D object was created, a
-small script was written that took horizontal slices of the object at
-appropriate heights, savings DXFs\footnote{An image format, similar to a JPGEG
-or PNG, that's commonly used with laser cutters} at each height.
-
+\fxwarning{Pictures and design of case}
