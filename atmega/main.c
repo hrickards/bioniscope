@@ -1,3 +1,6 @@
+/* ****************************************************************************
+   main.c
+***************************************************************************** */
 #include <util/delay.h>
 #include <avr/interrupt.h>
 
@@ -38,7 +41,5 @@ int main(void) {
       // Send any debugging info over USB
       DebuggerRun();
     #endif
-
-    _delay_ms(10);
   }
 }

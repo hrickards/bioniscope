@@ -72,11 +72,8 @@ public class GraphFragment extends Fragment {
     public void setData(byte[] xData, boolean channel) {
         // Get the voltage range
         double voltsRange;
-        if (channel) {
-            voltsRange = mVoltsRangeA;
-        } else {
-            voltsRange = mVoltsRangeB;
-        }
+        voltsRange = Math.max(mVoltsRangeA, mVoltsRangeB);
+        voltsRange = 255;
 
         mGraphView.setManualYAxisBounds(voltsRange, -voltsRange);
 
@@ -84,7 +81,8 @@ public class GraphFragment extends Fragment {
         for (int i=0; i<xData.length; i++) {
             // Bytes are unsigned, so to convert into a positive int we have to take the absolute
             // value
-            data[i] = new GraphView.GraphViewData(i*timeSample, (Math.abs((int) xData[i])-preferencesGetDouble(PREF_ZERO_POINT, DEFAULT_ZERO_POINT))*2*voltsRange/255.0);
+            data[i] = new GraphView.GraphViewData(i*timeSample, Math.abs((int) xData[i]));
+            //data[i] = new GraphView.GraphViewData(i*timeSample, (255-(Math.abs((int) xData[i]))-preferencesGetDouble(PREF_ZERO_POINT, DEFAULT_ZERO_POINT))*2*voltsRange/255.0);
         }
 
         // Get the series to add the data to

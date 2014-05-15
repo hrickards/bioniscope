@@ -90,7 +90,7 @@ definitely be enough current available.}:
 which gives a total of \SI{110}{\mA}.
 
 Similarly, a \SI{-5}{\V} rail will be needed for the first-stage amplifier that
-can sink at least \SI{5}{\mA}, and a ground rail will be needed that can source
+can sink at least \SI{5}{\mA}, and a ground rail will be needed that can sink
 at least \SI{110}{\mA}\footnote{There will always be a positive load, so we do
   not need to worry about the ground rail being able to source the \SI{5}{\mA}
 that will flow to the \SI{-5}{\V} rail}.
@@ -100,12 +100,12 @@ that will flow to the \SI{-5}{\V} rail}.
 While researching this part of the circuit, your author came upon a chip known
 as an \textit{inverting charge pump}, a device that takes $V_s$ and \SI{0}{\V}
 as inputs and outputs $-V_s$ and \SI{0}{\V} as outputs\footnote{The way it does
-  this is very clear, but revolves around charging up a capacitor in one
+this is complicated, but revolves around charging up a capacitor in one
 direction and then discharging it in the opposite direction.} --- essentially
 providing a low-current\footnote{The highest commonly-available current rating
-  seems to be about \SI{1}{\A}} dual power supply. This was implemented into the
-  oscilloscope's power supply as it means only a positive voltage and ground
-  need to be input, meaning it could potentially be powered by battery.
+seems to be about \SI{1}{\A}} dual power supply. This was implemented into the
+oscilloscope's power supply as it means only a positive voltage and ground need
+to be input, meaning it could potentially be powered by battery.
 
 Many of the chips (primarily the ADC and microcontroller) require very precise
 and stable power rails, and to that effect a voltage regulator will be used.
@@ -538,7 +538,9 @@ The Android device and the microcontroller will communicate via Bluetooth, which
 will emulate a serial link. In essence, a form of communication will be
 established where sequences of bytes can be sent by both devices simeltanousely.
 
-The following protocol was designed for serial communication between the Android
+The following protocol\footnote{The commands are given sequential bytes, however
+some bytes are skipped because a number of command bytes were used solely in the
+prototyping phase} was designed for serial communication between the Android
 device and the microcontroller. After taking a full 1024 samples, the
 microcontroller checks the serial buffer for one of the following commands and
 acts on it, responding via serial if necessary.
@@ -561,20 +563,10 @@ those characters. For example, 65 below corresponds to a capital `A'.
   \item[\texttt{0x02}] Return all digital samples (1024 bytes, with each byte
     representing all 8 samples at one timepoint, followed by a newline)
 
-  \item[\texttt{0x03}] Use analogue channel 1 to trigger (returns a newline)
-
-  \item[\texttt{0x04}] Use analogue channel 2 to trigger (returns a newline)
-
-  \item[\texttt{0x05}] Wait for the next transmitted byte, $X$, and use the
-  $X$th digital channel to trigger (returns a newline)
-
   \item[\texttt{0x06}] Wait for the next two transmitted bytes, $X$ and $Y$ and
   use $XY$\footnote{For example, if $X = \texttt{0x50}$ and $Y=\texttt{0x1A}$
   then use \texttt{0x501A} as the delay} as the number of microseconds to pause
   in between digital samples (returns a newline)
-
-  \item[\texttt{0x07}] Wait for the next transmitted byte, $X$, and use $X$ as
-  the analogue trigger threshold (returns a newline)
 
   \item[\texttt{0x08}] Wait for the next transmitted byte, $X$, and use the 7
   least significant bits of $X$ as the digital pot value in an amplifier (if the
@@ -588,18 +580,6 @@ those characters. For example, 65 below corresponds to a capital `A'.
   \item[\texttt{0x0A}] Noop (this is the newline character) (returns a newline)
 
   \item[\texttt{0x0C}] Return the current digital time delay (returns two bytes
-    then a newline)
-
-  \item[\texttt{0x0D}] Set the digital trigger threshold from the next
-    transmitted byte $X$ (returns a newline)
-
-  \item[\texttt{0x0E}] Return the digital trigger threshold (returns a byte then
-    a newline)
-
-  \item[\texttt{0x0F}] Set the type of digital trigger based on the next
-    transmitted byte $X$ (returns a newline)
-
-  \item[\texttt{0x10}] Return the type of digital trigger (returns a data byte
     then a newline)
 
   \item[\texttt{0x11}] Set the time delay between analogue samples based on the
@@ -707,6 +687,8 @@ structured. Furthermore, modern C compilers can optimise C code to a smaller
 amount of Assembly than any human programmer, meaning the only reason to use
 Assembly is for educational purposes.
 
+The completed PIC program can be seen in~\cref{sec:picProgramCode}.
+
 \subsection{Bluetooth Transceiver}
 \label{sec:wireless_transceiver}
 
@@ -742,10 +724,32 @@ Java was used to create an Android application that interfaced with the
 oscilloscope. Discussing the development of this application is far beyond the
 scope (pun not intended) of this project, but the code is fully documented and
 available on GitHub at \url{http://github.com/hrickards/bioniscope}. A number of
-screenshots are shown in.
+screenshots of the working app are shown
+in~\cref{fig:analogueScreenshot,fig:digitalScreenshot,fig:spectrumScreenshot}.
 
-\fxwarning{Screenshots of Android App}
+\begin{landscape}
+  \begin{figure}[h]
+    \includegraphics[width=\linewidth]{img/screenshots/analogue.png}
+    \caption{Analogue waveform shown in Android Bioniscope app}
+    \label{fig:analogueScreenshot}
+  \end{figure}
+\end{landscape}
 
+\begin{landscape}
+  \begin{figure}[h]
+    \includegraphics[width=\linewidth]{img/screenshots/digital.png}
+    \caption{Digital timing diagram shown in Android Bioniscope app}
+    \label{fig:digitalScreenshot}
+  \end{figure}
+\end{landscape}
+
+\begin{landscape}
+  \begin{figure}[h]
+    \includegraphics[width=\linewidth]{img/screenshots/spectrum.png}
+    \caption{Analogue frequency spectrum shown in Android Bioniscope app}
+    \label{fig:spectrumScreenshot}
+  \end{figure}
+\end{landscape}
 
 
 \section{Circuit}
@@ -762,47 +766,45 @@ This allowed the basic circuit details to be checked without requiring an
 infeasibly large circuit to be built on a breadboard. 
 
 \subsection{PCB Layout}
-Once this prototype verification step was performed, the PCB was laid out on a
-breadboard. This process consists of three main steps: inputting the schematic
+Once this prototype verification step was performed, the circuit was laid out on a
+PCB. This process consists of three main steps: inputting the schematic
 into the computer, laying out the schematic components onto the board and
 routing traces (the PCB equivalent of wires) between the components.
 
 Initially this was attempted using a piece of software called Eagle. A
 significant number of electronics projects use Eagle, from small hobbyist
 projects right up to industrial products. However, as this author started to lay
-components onto the PCB using Eagle, one encountered an error: the free version
+components onto the PCB using Eagle, an error was thrown: the free version
 of Eagle only allows a maximum PCB size of \SI{100}{\mm}x\SI{80}{\mm}. For
 reasons discussed later, the PCB size needed to be \SI{100}{\mm}x\SI{100}{\mm}.
 The cheapest paid-version of Eagle is \$169, meaning it was much too expensive
 to purchase for the sake of this project. Instead, an alternative was sought.
 
 This author researched and briefly evaluated two alternatives: KiCAD and
-DipTrace. KiCAD is a piece of open source software, meaning it's free to
-use
-\footnote{There are two disctinct definitions of free that should be
-considered here: gratis free (without cost to the user, this is somewhat
-confusingly also called free as in beer) and libre free (without compromise to
-the user's liberties, this is also known as free as in speech and essentially
-means that the user has the right to run the software however they want, as
-well as the right to modify it, meaning the source code is freely available.
-Software that's Free (with a capital F) is also known as open-source software
-(there are major differences between the two terms, however for the purposes
-of this explanation the reader can consider them identical) is both free as in
-gratis and free as in libre, and common examples include LibreOffice (hence
-the name) and GNU/Linux (the operating system running everything from the
-majority of super computers to televisions to traffic lights). For more on this
-subject, see Richard Stallman's book `\textit{Free as in Freedom}', which is
-also Free and hence freely available on the internet.},
-and DipTrace, a commercial piece of software with a free version available
-limited to 2 signal layers\footnote{It would be impractical to have all of the
-  traces in a PCB in the same horizontal plane, as they would not be able to
-  cross at any point. Instead, a number of planes, or \textit{layers}, are used.
-  PCBs are made by pressing together a number of 2-sided PCB `chapters`, meaning
-  that common numbers of layers are 2, 4 or 6 (with higher numbers possible but
-  more expensive). As it's the cheapest available and offers enough trace
-routing, a 2 layer board will be used for this project} and 300
-pins\footnote{This project uses somewhere in the region of 250 pins, so this
-limit is not a problem}.
+DipTrace. KiCAD is a piece of open source software, meaning it's free to use
+\footnote{There are two disctinct definitions of free that should be considered
+here: gratis free (without cost to the user; this is somewhat confusingly also
+called free as in beer) and libre free (without compromise to the user's
+liberties; this is also known as free as in speech and essentially means that
+the user has the right to run the software however they want, as well as the
+right to modify it, meaning the source code is freely available).  Software
+that's Free (with a capital F) is also known as open-source software (there are
+major differences between the two terms, however for the purposes of this
+explanation the reader can consider them identical) meaning it's both free as in
+gratis and free as in libre. Common examples include LibreOffice (hence the
+name) and GNU/Linux (the operating system running everything from the majority
+of super computers to televisions to traffic lights). For more on this subject,
+see Richard Stallman's book `\textit{Free as in Freedom}', which is also Free
+and hence freely available on the internet.}, and DipTrace, a commercial piece
+of software with a free version available limited to 2 signal layers\footnote{It
+would be impractical to have all of the traces in a PCB in the same horizontal
+plane, as they would not be able to cross at any point. Instead, a number of
+planes, or \textit{layers}, are used.  PCBs are made by pressing together a
+number of 2-sided PCB `chapters`, meaning that common numbers of layers are 2, 4
+or 6 (with higher numbers possible but more expensive). As it's the cheapest
+available and offers enough trace routing, a 2 layer board will be used for this
+project} and 300 pins\footnote{This project uses somewhere in the region of 250
+pins, so this limit is not a problem}.
 
 Both are very capable pieces of software, and KiCAD would certainly be
 favourable for philosophical reasons. Howerver, the majority of the ICs used in
@@ -816,7 +818,7 @@ There were no major issues in creating the circuit schematic in DipTrace,
 although a number of revisions were required for small improvements. Laying out
 the PCB and routing the traces was much harder. DipTrace contains tools to
 automatically place and route, however the electrical engineering community
-strongly recommends against using auto routers. Placing and routing is a task
+strongly recommends against using such auto routers. Placing and routing is a task
 that's extremely hard for a computer to find an optimal solution
 to\footnote{There is a classification of such problems, known as NP. Very
   briefly: a \textit{running time} can be assigned to a given algorithm. For
@@ -868,7 +870,7 @@ in~\cref{fig:pcbFoam}
 \end{figure}
 
 \begin{figure}[H]
-  \includegraphics[width=\linewidth]{img/pcb/pcbFoam.png}
+  \includegraphics[width=\linewidth]{img/pcb/pcbFoam.jpg}
   \caption[PCB (Mockup)]{Photograph of a mockup of the PCB produced using paper and foam,
   allowing the sizes and placements of components to be checked}
   \label{fig:pcbFoam}
@@ -878,7 +880,7 @@ in~\cref{fig:pcbFoam}
 The final step in the process was to get the board manufactured. In an American
 or European fab house (the name for the company that prints the boards) this
 would be extremely expensive. For example, popular EuroCircuits quoted a price
-of over over over \pounds 90 to produce just \textbf{one} board.
+of over over \pounds 90 to produce just \textbf{one} board.
 
 Instead, a Chinese proxy to a Chinese fab house was chosen (nearly all low cost
 Chinese retailers use the Golden Phoenix fab house, but ordering directly from
@@ -897,7 +899,7 @@ was chosen. Most Chinese PCB retailers only offer UPS and FedEx, which would
 have cost around \$30 for this order. DFRobot offered DHL as well, which was
 just over half the cost at \$16}. The boards cost \$23.99 for 10 boards, with a
 \$16 delivery charge on top. At a cost of \$2.40 per board, ordering from a
-Chinese retailer made the boards over 60 times cheaper than orderin from a
+Chinese retailer made the boards over 60 times cheaper than ordering from a
 European fab house!
 
 As required, the boards were \SI{100}{mm}x\SI{100}{mm} and 2 layers. There were
@@ -960,4 +962,30 @@ a 3D printer or a laser cutter. For easy examiner inspection, the enclosure
 needed to be transparent and only coloured plastic filament was available for
 the 3D printer, meaning the laser cutter needed to be used.
 
-\fxwarning{Pictures and design of case}
+A case was designed using the industry standard 2D cad package \textit{2D
+Design}. It was laser cut out of transparent acrylic and solvent welded together
+using \textit{dichloromethane}. The final enclosure can be seen
+in~\cref{fig:enclosurePhoto}.
+
+\begin{figure}
+  \includegraphics[width=\linewidth]{img/enclosure.jpg}
+  \caption{The final enclosure, with the circuit inside}
+  \label{fig:enclosurePhoto}
+\end{figure}
+
+
+\section{Final System}
+
+See~\cref{fig:finalSystemPhoto,fig:finalSystemWorking} for the final system.
+
+\begin{figure}[h]
+  \includegraphics[width=\linewidth]{img/finalSystemPhoto.jpg}
+  \caption{The final circuit}
+  \label{fig:finalSystemPhoto}
+\end{figure}
+
+\begin{figure}[h]
+  \includegraphics[width=\linewidth]{img/finalSystemWorking.jpg}
+  \caption{The final circuit in action}
+  \label{fig:finalSystemWorking}
+\end{figure}

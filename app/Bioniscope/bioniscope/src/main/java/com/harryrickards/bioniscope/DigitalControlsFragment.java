@@ -19,9 +19,11 @@ public class DigitalControlsFragment extends Fragment {
     TextView timeSampleLabel;
     Button captureButton;
     double mTimeSample;
+    boolean sampleButtonEnabled;
 
     final static double MIN_TIME_SAMPLE = 2;
     final static double MAX_TIME_SAMPLE = 102;
+    final static double DEFAULT_TIME_SAMPLE = MIN_TIME_SAMPLE;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -62,7 +64,7 @@ public class DigitalControlsFragment extends Fragment {
             }
         });
 
-        setTimeSample(MIN_TIME_SAMPLE, false);
+        setTimeSample(DEFAULT_TIME_SAMPLE, false);
     }
 
     public interface OnDigitalControlChangedListener {
@@ -89,9 +91,16 @@ public class DigitalControlsFragment extends Fragment {
 
     // Grey out sample button
     public void setSampleButtonEnabled(boolean enabled) {
+        sampleButtonEnabled = enabled;
+
         if (captureButton != null) {
-            captureButton.setEnabled(enabled);
-        }
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                captureButton.setEnabled(sampleButtonEnabled);
+            }
+        });
+    }
     }
 
 

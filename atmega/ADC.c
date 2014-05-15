@@ -1,3 +1,6 @@
+/* ****************************************************************************
+   ADC.c
+***************************************************************************** */
 #include <avr/io.h>
 #include <util/delay.h>
 #include "Global.h"
@@ -24,7 +27,6 @@ void ADCSetup(void) {
 }
 
 // Operating in pipelined mode
-// TODO Speed up the following (aim: 2uS a sample)
 Byte ADCSample(char address) {
   // Set address of the ADC
   if (address == 0xFF) {

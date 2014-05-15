@@ -1,8 +1,10 @@
 package com.harryrickards.bioniscope;
 
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,6 +24,9 @@ public class SpectrumFragment extends Fragment {
     GraphView mGraphView;
     GraphViewSeries mSeriesA, mSeriesB;
     double timeSample = 1;
+    SharedPreferences preferences;
+    double mVoltsRangeA = 5;
+    double mVoltsRangeB = 5;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -43,6 +48,9 @@ public class SpectrumFragment extends Fragment {
         //mGraphView.setScalable(true);
         //mGraphView.setScrollable(true);
 
+        mVoltsRangeA = 5;
+        mVoltsRangeB = 5;
+
         // Data series
         mSeriesA = new GraphViewSeries(new GraphView.GraphViewData[] {});
         mSeriesB = new GraphViewSeries(new GraphView.GraphViewData[] {});
@@ -56,14 +64,33 @@ public class SpectrumFragment extends Fragment {
         graphLayout.addView(mGraphView);
     }
 
+    // Get a double from the default SharedPreferences
+    double preferencesGetDouble(String key, double defaultValue) {
+        if (preferences == null) {
+            preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        }
+        return Double.parseDouble(preferences.getString(key, String.valueOf(defaultValue)));
+    }
+
     // Channel A <=> channel
     public void setData(byte[] timeData, boolean channel) {
+        // Get the voltage range
+        double voltsRange;
+        if (channel) {
+            voltsRange = mVoltsRangeA;
+        } else {
+            voltsRange = mVoltsRangeB;
+        }
+
         // Run the FFT
         FFT fft = new FFT(timeData.length);
 
         // Input data which will contain magnitudes
         double[] magnitudes = new double[timeData.length];
-        for (int i=0; i<timeData.length; i++) { magnitudes[i] = Math.abs((int) timeData[i]); }
+        //for (int i=0; i<timeData.length; i++) { magnitudes[i] = Math.abs((int) timeData[i]); }
+        for (int i=0; i<timeData.length; i++) {
+            magnitudes[i] = Math.abs((int) timeData[i])/255.0;
+        }
 
         // Temporary array used to store imaginary parts. Prefilled with zeroes.
         double[] imag = new double[timeData.length];
@@ -82,8 +109,10 @@ public class SpectrumFragment extends Fragment {
             // f = i * Fs / N
             // fs = 1/T = (1000/T in us)
             double frequency = i*1e6/(1024.0*timeSample);
-            // TODO y scale
-            data[i] = new GraphView.GraphViewData(frequency, values[i]);
+            // 1/32 = 1/sqrt(1024) = 1/sqrt(n)
+            // TODO 20log(|fft|) = 10log(|fft|^2)
+            double magnitude = values[i];
+            data[i] = new GraphView.GraphViewData(frequency, magnitude);
         }
 
         // Add data to the series
@@ -98,6 +127,14 @@ public class SpectrumFragment extends Fragment {
 
     public void hideTraceOne() {mSeriesA.resetData(new GraphView.GraphViewData[] {});}
     public void hideTraceTwo() {mSeriesB.resetData(new GraphView.GraphViewData[] {});}
+
+
+    public void setVoltsRangeA(double voltsRangeA) {
+        mVoltsRangeA = voltsRangeA;
+    }
+    public void setVoltsRangeB(double voltsRangeB) {
+        mVoltsRangeB = voltsRangeB;
+    }
 
     public void setTimeSample(double mTimeSample) {
         timeSample = mTimeSample;

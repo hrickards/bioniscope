@@ -27,6 +27,7 @@ public class TraceControlView extends LinearLayout {
 
     final static double MAX_VOLTS = 5.0;
     final static double MIN_VOLTS = 50e-3;
+    final static double DEFAULT_VOLTS = MAX_VOLTS;
 
     public TraceControlView(Context context, AttributeSet attrs) {
         super(context, attrs);

@@ -1,0 +1,72 @@
+\chapter{Testing}
+\section{Test Procedure}
+\subsection{Overall System}
+
+Three different tests will be done to test the overall system. To run these
+tests a square wave and a sinusoid wave will be produced using a signal
+generator at \SI{100}{\Hz}, \SI{1}{\kHz}, \SI{10}{\kHz} and \SI{20}{\kHz}. Using
+the stated accuracy of the signal generator, the frequency of the waves will be
+accurate to within ... and the amplitude to within ... .
+
+\fxwarning{Signal generator accuracy}
+
+The sinusoid wave will be fed into the oscilloscope at each different frequency,
+and the time period and amplitude recorded from the waveform view. These will be
+compared to the known values to compute an accuracy value for the oscilloscope.
+
+
+
+
+
+
+\chapter{Testing}
+\section{Test Procedure}
+At a range of different input frequencies (what did we use?)
+Input a square wave and sinusoid wave to the system
+At a known time period and amplitude
+Look at time period and amplitude of scope waveform
+Calculate accuracy. Signal generate accurate to ... so use that accuracy.
+
+Equipment
+
+At a range of different input frequencies (what did we use?)
+Input a square wave and sinusoid wave to the system
+At a known time period
+Look at frequencies on FFT
+Verify right pattern and record Fs step
+Calculate accuracy. Signal generate accurate to ... so use that accuracy.
+
+At a range of different input frequencies (what did we use?)
+Input a square wave to the system
+At a known time period
+Look at digital waveform time period
+Calculate accuracy. Signal generate accurate to ... so use that accuracy.
+
+On all three, qualitatively check they look the same
+
+Check it works with a 20khZ wave. Assume accurate to
+>50\% (why is that a reasonable estimate?) and then check with a 30kHz wave.
+
+Check the bandwidth of the scope. Assume accurate to >50\%  and then check
+bandwidth greater than 1.5 * whatever we said.
+
+Resolution given by ADC, so don't need to check.
+Memory depth done programatically, so don't need to check.
+
+Check at +- 50mV. Use an oscilloscope to check accuracy of wave we're putting in
+(previously found scope to be accurate to less than 1\%)
+Check at +- 5V
+
+\section{Initial Assessment of System}
+Works accurately, but doesn't work with negative voltages. Means it only has
+limited usefulness. Still good for digital though.
+
+\section{Limitations}
+Issue is negative voltages don't go through the digital pot.
+To overcome this, we have some pre analogue circuitry that offests everything
+and scales by a gain of 0.5.
+
+Built the circuitry, and tested it. It works.
+
+\section{Reassessment of System}
+Now very useful. All works.

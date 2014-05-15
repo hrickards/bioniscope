@@ -16,7 +16,7 @@ because the display is a Cathode Ray Tube).~\autocite{DoctronicsScopes}
 
 The alternative is a DSO, or Digital Storage Oscilloscope. These work in a very
 different way to CROs. Like in a CRO, the input signal is first passed through
-some analogue circuitry to amplify it and so on. However, it's then sampled
+some analogue circuitry to amplify it, offset it and so on. However, it's then sampled
 into a digital signal using a DAC (Digital to Analogue Converter) and processed
 using a microcontroller (perhaps using the help of an FPGA\fdeffpga or a
 DSP\fdef{Digital Signal Processor}{a custom microcontroller especially designed
@@ -64,7 +64,7 @@ more advanced features included:
   \item Basic capability as a Logic Analyser
 \end{itemize}
 
-From now on, oscilloscope will be used to refer to a Digital Sampling
+From now on, \textit{oscilloscope} will be used to refer to a Digital Sampling
 Oscilloscope and CRO will be used to explicitly refer to a Cathode Ray
 Oscilloscope.
 
@@ -118,7 +118,7 @@ oscilloscopes can be categorised by the following criteria:
     decoding Ethernet, TCP/IP\footnote{The protocol used for internet
     networking} and HTTP\footnote{The protocol used to transfer web pages over
     the internet} packets from a digial input, and eventually triggering the
-    analogue inputs when a certain webpage is requested.
+    analogue channels when a certain webpage is requested.
 
   \item \textbf{Input range} The minimum and maximum range of input voltages
     that can be detected by the oscilloscope. A typical value would be from
@@ -138,6 +138,7 @@ oscilloscopes can be categorised by the following criteria:
 \section{Practical Investigations}
 
 \subsection{Oscilloscope Reliability Investigation}
+\label{sec:oscilloscopeReliabilityInvestigation}
 
 An existing oscilloscope (in this case, a CRO) will be a vital part of testing
 the osilloscope, so it would be wise to test it's accuracy first.
@@ -168,8 +169,8 @@ FPGA's internal\footnote{A high-quality crystal oscillator} \SI{50}{\MHz} clock,
 meaning the output frequency could be easily calculated using
 
 \begin{equation}
-  \label{eq:freqCalculation}
   f = \frac{\SI{50}{\MHz}}{2^n}
+  \label{eq:frequencyCalculationEquation}
 \end{equation}
 
 where $n$ is the clock divisor. The accuracy of the crystal oscillator is so
@@ -202,7 +203,7 @@ the number of divisions counted in one period of the wave. From these, the
 measured frequency and amplitude were calculated.
 
 These measured values were compared to the actual frequency (as calculated
-by~\cref{eq:freqCalculation}) and amplitude (the digital output from the FPGA
+by~\cref{eq:frequencyCalculationEquation}) and amplitude (the digital output from the FPGA
 ranged from \SI{0}{\V} to it's logic-high level of \SI{3.3}{\V}, leading
 to an amplitude of \SI{1.65}{\V}) to find error values for the frequency and
 amplitude.
@@ -218,11 +219,11 @@ result and disregarded for the rest of this analysis.
 
 Note the high level of accuracy, particularly with regards to frequency. Due to
 previous bad experiences with this oscilloscope, your author was rather
-surprised at the results.  Almost all of the error can actually be put down to
-errors in the human measurement process. Take $n=7$ as an example: the number of
-X divisions was measured as $5.1$ to 1 decimal place, giving a percentage error
-of $0.98\%$. It is purely coincidental then, that the actual error is less than
-half that at $0.39\%$!
+surprised at the results.  Furthermore, almost all of the error can actually be
+put down to errors in the human measurement process. Take $n=7$ as an example:
+the number of X divisions was measured as $5.1$ to 1 decimal place, giving a
+percentage error of $0.98\%$. It is purely coincidental then, that the actual
+error is less than half that at $0.39\%$!
 
 \begin{landscape}
   \begin{table}
@@ -256,6 +257,7 @@ half that at $0.39\%$!
 \end{landscape}
 
 \subsection*{Qualitative Results}
+\label{sec:oscilloscopeSquare}
 
 \begin{figure}[h]
   \includegraphics[width=\textwidth]{img/experiments/scope/wave.jpg}
@@ -348,10 +350,10 @@ basic method.}.
 
 \subsection{Bluetooth Distance Test}
 
-As discussed in~\cref{sec:CommOptions}, Bluetooth will be used to communicate
-between the microcontroller and Android device. Because of this, a practical
-investigation was undertaken to test the reliability of the Bluetooth link at
-different distances.
+As discussed later in~\cref{sec:CommOptions}, Bluetooth will be used to
+communicate between the microcontroller and Android device. Because of this, a
+practical investigation was undertaken to test the reliability of the Bluetooth
+link at different distances.
 
 The Bluetooth module to eventually be used in the final product, an HC06, was
 connected to an Arduino (an ATMega microcontroller development board allowing
@@ -371,18 +373,18 @@ in~\cref{lst:bluetoothDistanceTestPython}\footnote{For details on how the
   Bluetooth receiver in the laptop was setup as a serial device, see the online
 page for this project at \url{http://github.com/hrickards/bioniscope}.}.
 
-\begin{figure}
+\begin{listing}
   \inputminted{c}{code/bluetooth.ino}
   \caption[Bluetooth experiment Arduino code]{The Arduino code used to echo back any characters received via
   Bluetooth}
   \label{lst:bluetoothDistanceTestArduino}
-\end{figure}
+\end{listing}
 
-\begin{figure}
+\begin{listing}
   \inputminted{python}{code/bluetooth.py}
   \caption[Bluetooth experiment python code]{The python code used to measure the accuracy of the Bluetooth link at various distances}
   \label{lst:bluetoothDistanceTestPython}
-\end{figure}
+\end{listing}
 
 This program was run at with the laptop a number of different distances from the
 HC06. The results are shown in~\cref{tab:bluetoothData}.
@@ -425,6 +427,7 @@ dropped out completely. This means that the oscilloscope should be able to be
 used at distances of up to \SI{5}{\m} away from the device.
 
 \section{Numerical Parameters}
+\label{sec:numericalParameters}
 
 \subsection*{Frequency and Sampling Rate}
 
@@ -445,27 +448,27 @@ breadboard are part of the DIP (dual in-line package) family: e.g., CDIP
 (Ceramic DIP) and PDIP (Plastic DIP). Other packages, such as TSOP, are usually
 much smaller and suitable only for soldering onto PCBs. While a PCB will be used
 for the final oscilloscope, soldering surface-mount chips (a generic term for
-all packages smaller than DIP, such as TSOP) requires unavailable specialist
-equipment.} package (suitable for breadboards) are not readily available beyond
-\SI{2}{\MHz}. Furthermore, the only \SI{2}{\MHz} DIP ADC, the AD7822, is
-renowned for being particularly difficult to interface with a microcontroller.
-Instead, an ADC with a maximum sampling rate of \SI{1}{\MHz} will be used (many
-DIP ICs can provide this sampling rate).
+all packages smaller than DIP, such as TSOP) requires specialist equipment
+unavailable to your author.} package (suitable for breadboards) are not readily
+available beyond \SI{2}{\MHz}. Furthermore, the only \SI{2}{\MHz} DIP ADC, the
+AD7822, is renowned for being particularly difficult to interface with a
+microcontroller.  Instead, an ADC with a maximum sampling rate of \SI{1}{\MHz}
+will be used (many DIP ICs can provide this sampling rate).
 
 However, at such a high speed getting the full sampling rate out of an ADC is
 not usually possible with a microcontroller (because, for example, a control bit
 might have to go high then low again for \SI{20}{\ns}, but a microcontroller
 with a \SI{16}{\MHz} clock can only do this in an absolute minimum of
 \SI{62.5}{\ns}). So the oscilloscope sampling rate will be specified as at least
-\SI{500}{\kHz}.
+\SI{250}{\kHz}.
 
 This means the maximum frequency that should be sampled is
-$\frac{\SI{500}{\kHz}}{25} = \SI{20}{\kHz}$.
+$\frac{\SI{250}{\kHz}}{25} = \SI{10}{\kHz}$.
 
 \subsection*{Bandwidth}
 
 The maximum frequency into the analogue amplification stage will be
-\SI{20}{\kHz}, but we also need to take into consideration harmonics (remember,
+\SI{10}{\kHz}, but we also need to take into consideration harmonics (remember,
 by Fourier any non-sinusoidal signal can be represented as a sum of sinusoidal
 signals of increasing frequency). The effect of this can be seen all too clearly
 in ~\cref{fig:oscilloscopeTestWave} To be safe, we will specify a minimum
@@ -476,9 +479,9 @@ bandwidth of \SI{1}{\MHz}.
 Inaccuracies in the oscilloscope output are more likely to be caused by the
 analogue circuitry (in particular, the digital potentiometers are only accurate
 to 0.25\%) than a low resolution, so an 8 bit resolution will suffice (this
-offers an accuracy of $\approx 0.4\%$, more accurate than the digital
-potentiometer accuracy). This also means ADCs will be more readily available, as
-8 bit DIP ADCs are more common than higher resolution ones.
+offers an accuracy of $\approx 0.4\%$, comparable to the digital potentiometer
+accuracy). This also means ADCs will be more readily available, as 8 bit DIP
+ADCs are significantly more common than higher resolution ones.
 
 \subsection*{Memory Depth}
 
@@ -500,9 +503,11 @@ amp. These only work up to to the supply voltage.}.
 
 \subsection*{Triggers Available}
 
-For the purposes of this project, simple edge triggering will more than suffice.
-Both the channel on which and the threshold at which the trigger occurs will be
-adjustable by the user.
+For the purposes of this project, no triggering will be used. The oscilloscope
+will capture enough samples that the intended use case will be capturing one set
+of samples and then analysing those results, rather than capturing a small set
+of samples and continuously refreshing that set like a traditional CRO. If
+needed, triggering could potentially be implemented in software at a later date.
 
 \section{Communication with Android Device}
 \label{sec:CommOptions}
@@ -519,22 +524,23 @@ USB.
 This would perhaps be the easiest way to implement the communication. Small
 discrete devices, such as the CP2102~\autocite{CP2102}, convert between the
 relatively complicated USB protocol and the simple UART\footnote{A UART
-  (Universal Asynchronous Receiver/Transmitter is actually a piece of hardware
-  that takes in parallel data (usually a byte made up of 8 bits) and transmits
-  it serially according to a certain serial protocol while also receiving data
-  serially and outputting it in parallel. While pedantically it's not correct,
-  we'll use UART protocol to refer to this protocol as is commonly done. There
-  is also a device called a USART, or Universal Synchronous/Asynchronous
-  Receiver/Transmitter. As the name suggests, these support sending data in both
-  a synchronous and asynchronous manner, and are very common inside
-  microcontrollers. However, in this document we'll take UART and USART to mean
-  the same thing: transmitting data asynchronously. As there is no synchronous
-data transmission required in the oscilloscope, this will not be an issue.}
-protocol. In fact, nearly all microcontrollers now come with a built-in USART
-interface, so the microcontroller side of things would be literally `plug and
+(Universal Asynchronous Receiver/Transmitter) is actually a piece of hardware
+that takes in parallel data (usually a byte made up of 8 bits) and transmits it
+serially according to a certain serial protocol, while also receiving data
+serially and outputting it in parallel. While pedantically it's not correct,
+we'll use \textit{UART protocol} to refer to this protocol as is commonly done.
+There is also a device called a USART, or Universal Synchronous/Asynchronous
+Receiver/Transmitter. As the name suggests, these support sending data in both a
+synchronous and asynchronous manner, and are very common inside
+microcontrollers. However, in this document we'll follow the electronics
+industry in taking UART and USART to mean the same thing: transmitting data
+asynchronously. As there is no synchronous data transmission required in the
+oscilloscope, this will not be an issue.} protocol. In fact, nearly all
+microcontrollers now come with a built-in USART interface, so the
+microcontroller side of things would be literally `plug and
 play'\footnote{Various configuration words would have to be moved to registers
-  to initialise USART communication at the start of the program, but beyond that
-  there would simply be registers for writing data, reading data and checking if
+to initialise USART communication at the start of the program, but beyond that
+there would simply be registers for writing data, reading data and checking if
 data is available to be read}.
 
 On the Android side, the microcontroller would appear as a serial communication
@@ -574,7 +580,7 @@ implement it.}, however Texas Instruments has recently released the CC3000, a
 module much cheaper than the competition.~\autocite{CC3000Cheap}
 
 If the initial project was being created on a custom PCB, then the CC3000 could
-simply be included as a component on the PCB. However, the prototype is being
+simply be included as a component on the PCB. However, the initial prototype is being
 created on a breadboard, so a breakout board (a board that contains the CC3000
 and an antenna and exposes a digital interface to the CC3000 via pins that can
 fit in a breadboard) is needed.
@@ -621,11 +627,11 @@ and a Bluetooth serial library used on the Android side. The heavy lifting of
 the Bluetooth communication is done by the HC-06 and software built into the
 Android device.
 
-Bluetooth obviously offers a wirelesss connection, and should work up to about
-\SI{10}{\m}. The maximum baud rate supported is
+Bluetooth obviously offers a wirelesss connection, and should work at distances
+ofup to about \SI{10}{\m}. The maximum baud rate supported is
 \SI{1.3824}{\mega\bit\per\second}, which is slower than both USB and WiFi but
 fast enough for our purposes (remember the oscilloscope takes 8-bit samples at
-\SI{500}{\kHz} so the sampling rate is only \SI{4}{\mega\bit\per\second}).
+\SI{250}{\kHz} so the sampling rate is only \SI{4}{\mega\bit\per\second}).
 
 \subsection*{Chosen Solution}
 The required wired connection between the oscilloscope and Android device ruled

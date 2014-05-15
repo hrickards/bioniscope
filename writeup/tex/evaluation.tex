@@ -1,5 +1,30 @@
 \chapter{Evaluation}
 
+As detailed in~\cref{sec:initialCriteriaMet}, all initial criteria were met and
+system testing verified this.
+
+The aim of this project was to create a Digital Sampling Oscilloscope, and that
+aim certainly succeeded. While it may not be the fastest or most accurate DSO
+available it's relatively unique in that it communicates with an Android tablet.
+The total cost (estimated to be about \pounds 35 if free samples were not
+available) also comes to much less than other DSOs, even the cheapest of which
+cost hundreds of pounds.
+
+There were two other secondary aims of the project: to generate frequency
+spectrums and to have basic logic analyser capability. As seen in the testing
+and general screenshots, frequency spectrums are certainly generated. While
+their accuracy was not numerically tested as in-depth as the waveforms, the
+spectrums are generated from the waveforms using an industry-standard algorithm
+so will have the same standard of accuracy.
+
+Basic logic analyser functionality was also implemented. At the moment, only
+timing diagrams can be displayed and no triggering functionality exists, which
+makes it less useful than a standalone logic analyser but still much better than
+a standard CRO. In the future, more advanced triggering could be implemented, as
+well as things like packet decoding (so data packets can be decoded and
+displayed all inside the logic analyser). This could all be implemented in
+software, so the hardware would not need to be modified.
+
 \section{Report Production}
 
 This report was produced in \LaTeX. Whilst offering many advantages over

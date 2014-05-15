@@ -5,7 +5,5 @@ typedef unsigned char Byte;
   #define _TD_DEFINED = 1
   extern int AnalogueTimeDelay;
   extern int DigitalTimeDelay;
-  extern Byte DigitalTriggerThreshold;
-  extern Byte DigitalTriggerType;
   extern Byte AnalogueSampleChannels;
 #endif

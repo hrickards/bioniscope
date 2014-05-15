@@ -39,8 +39,6 @@ public class MainActivity extends Activity implements OnNavigationListener,
         DigitalControlsFragment.OnDigitalControlChangedListener,
         DigitalFragment.OnDigitalActionInterface {
 
-    // TODO Increase bluetooth baud rate
-
     // Bluetooth
     BluetoothAdapter mBluetoothAdapter;
     BluetoothDevice mDevice;
@@ -291,8 +289,11 @@ public class MainActivity extends Activity implements OnNavigationListener,
             onConnectionFailed();
         }
 
-
-        // TODO Send default values (before requesting sample)
+        onTraceOneVoltsDivChanged(TraceControlView.DEFAULT_VOLTS);
+        onTraceTwoVoltsDivChanged(TraceControlView.DEFAULT_VOLTS);
+        onTimeSampleChanged(ControlsFragment.DEFAULT_TIME_SAMPLE);
+        onDigitalTimeSampleChanged(DigitalControlsFragment.DEFAULT_TIME_SAMPLE);
+        sendTraceCommand();
 
         // Request a sample based on the mode we're currently in
         onRelevantSampleRequested();
@@ -477,7 +478,9 @@ public class MainActivity extends Activity implements OnNavigationListener,
                         if (mDigitalFragment != null) {
                             mDigitalFragment.setData(mData);
                         }
-                        mDigitalControlsFragment.setSampleButtonEnabled(true);
+                        if (mDigitalControlsFragment != null) {
+                            mDigitalControlsFragment.setSampleButtonEnabled(true);
+                        }
                     }
                 });
             }
@@ -752,9 +755,12 @@ public class MainActivity extends Activity implements OnNavigationListener,
         if (mGraphFragment != null) {
             mGraphFragment.setVoltsRangeA(value);
         }
+        if (mSpectrumFragment != null) {
+            mSpectrumFragment.setVoltsRangeA(value);
+        }
 
         // Calculate pot byte to send
-        byte mByte = gainToPotValue(500e-3/value, false);
+        byte mByte = gainToPotValue(value/500e-3, false);
         Log.v("scope", "pot A byte" + CommandInterface.bytesToHex(new byte[] {mByte}));
 
         runCommand(new Command((byte) 0x08, new byte[] {mByte}, 0, new CommandInterface.CommandCallback() {
@@ -768,9 +774,12 @@ public class MainActivity extends Activity implements OnNavigationListener,
         if (mGraphFragment != null) {
             mGraphFragment.setVoltsRangeB(value);
         }
+        if (mSpectrumFragment != null) {
+            mSpectrumFragment.setVoltsRangeB(value);
+        }
 
         // Calculate pot byte to send
-        byte mByte = gainToPotValue(2.5/value, true);
+        byte mByte = gainToPotValue(value/500e-3, true);
         Log.v("scope", "pot B byte" + CommandInterface.bytesToHex(new byte[] {mByte}));
 
         runCommand(new Command((byte) 0x08, new byte[] {mByte}, 0, new CommandInterface.CommandCallback() {
@@ -787,7 +796,7 @@ public class MainActivity extends Activity implements OnNavigationListener,
         double resistance = 5E3/gain;
 
         // Resistance varies linearly between 175 and 9.5k
-        int value = (int) (127 - (resistance-175)/(9.5e3-175)*127);
+        int value = (int) ((resistance-175)/(9.5e3-175)*127);
         // We need a value between 127 and 0
         if (value < 0 || value > 127) { value = 0; }
 

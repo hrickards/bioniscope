@@ -32,6 +32,7 @@ public class ControlsFragment extends Fragment {
 
     final static double MIN_TIME_SAMPLE = 1;
     final static double MAX_TIME_SAMPLE = 101;
+    final static double DEFAULT_TIME_SAMPLE = MIN_TIME_SAMPLE;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -112,9 +113,9 @@ public class ControlsFragment extends Fragment {
         // Set default controls
         traceOne.setTraceEnabled(true, false);
         traceTwo.setTraceEnabled(true, false);
-        traceOne.setVoltsDiv(traceOne.MAX_VOLTS, false);
-        traceTwo.setVoltsDiv(traceTwo.MAX_VOLTS, false);
-        setTimeDiv(MIN_TIME_SAMPLE, false);
+        traceOne.setVoltsDiv(traceOne.DEFAULT_VOLTS, false);
+        traceTwo.setVoltsDiv(traceTwo.DEFAULT_VOLTS, false);
+        setTimeDiv(DEFAULT_TIME_SAMPLE, false);
     }
 
     protected void setTimeDivFromProgress(int progress) {

@@ -1,3 +1,6 @@
+/* ****************************************************************************
+   Command.c
+***************************************************************************** */
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include "Global.h"
@@ -31,17 +34,6 @@ void ReceiveCommand(void) {
     case 0x06:
       Data1 = BTUSARTRead();
       Data2 = BTUSARTRead();
-      break;
-
-    // Set digital trigger threshold
-    case 0x0D:
-      Data1 = BTUSARTRead();
-      break;
-
-    // Set type of digital trigger
-    // See Sampler.c
-    case 0x0F:
-      Data1 = BTUSARTRead();
       break;
 
     // Set time delay between analogue samples
@@ -119,33 +111,6 @@ void CommandRun(void) {
       BTUSARTTransmit(AnalogueTimeDelay >> 8);
       BTUSARTTransmit(AnalogueTimeDelay & 0xFF);
       break;
-
-    // Set the digital trigger threshold
-    case 0x0D:
-      DigitalTriggerThreshold = Data1;
-      break;
-
-    // Return the digital trigger threshold
-    case 0x0E:
-      BTUSARTTransmit(DigitalTriggerThreshold);
-      break;
-
-    // Set the type of digital trigger
-    // See Sampler.c
-    case 0x0F:
-      DigitalTriggerType = Data1;
-      break;
-
-    // Return the type of digital trigger
-    case 0x10:
-      BTUSARTTransmit(DigitalTriggerType);
-      break;
-
-    // TODO Triggering
-    // 0x03 Set analogue trigger to channel A
-    // 0x04 Set analogue trigger to channel B
-    // 0x07 Analogue trigger threshold
-    // 0x05 Better digital triggering
 
     // Look at bits 0 and 1 in Data1 to enable/disable analogue channels
     case 0x09:

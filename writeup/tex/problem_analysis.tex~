@@ -1,0 +1,252 @@
+\chapter{A. Problem Analysis and Solution Design}
+\section{Aa. Problem Definition}
+
+Oscilloscopes available in schools are generally basic analogue Cathode Ray
+Oscilloscopes (CROs). This means a number of features, such as frequency
+spectrums, are not available. This project aims to create a digital sampling
+oscilloscope, including features such as these frequency spectrums.
+
+
+\section{Ab. Research}
+\subsection{Existing Systems}
+
+Using two articles from \textcite{PicotechScopes,gabotronics_scopes} digital oscilloscopes can be
+categorised by the following criteria:
+
+\begin{itemize}
+  \item \textbf{Bandwidth} The bandwidth in \SI{}{\Hz} of the initial analogue stages of the
+  oscilloscope (to the point where the signal is has a gain of $\SI{-3}{\dB}
+  \approx 71\%$). Common values range from \SI{100}{\kHz} to \SI{100}{\MHz}.
+
+  \item \textbf{Type of Sampling} There are two common types of sampling,
+  real-time and equivalent-time sampling. With real time sampling. With
+  real-time sampling the scope samples sequentially over the wave, whereas with
+  equivalent-time sampling the scope captures a sample from a different part
+  over the wave every time period.
+
+  While equivalent-time sampling offers a much faster sampling rate, it is more
+  complicated to implement so for the purposes of this project we will only be
+  considering real-time sampling.
+
+  \item \textbf{Sample Rate} The rate (in \SI{}{\Hz} or the equivalent
+  \textit{samples per second}) at which the oscilloscope can take individual
+  digital samples from the signal. Common values range from \SI{100}{\kHz} to
+  \SI{1}{\GHz}.
+
+  \item \textbf{Resolution} The number of bits each sample has. Common values
+  range from 8 bits to 16 bits.
+
+  \item \textbf{Memory Depth} The number of samples the oscilloscope can store
+  at one time. Measured in either words, or bits (for example, if the resolution
+  is 8 bits then a depth of 128 words is equivalent to 1024 bits). Intuitively,
+  this can be thought of as the horizontal resolution. Common values range from
+  100 samples to \SI{10}{M} samples.
+
+  \item \textbf{Triggers Available} The different options to trigger the
+  oscilloscope to start capturing samples, with the most common one being edge
+  triggering \autocite{picotech_trigger} (when the signal is below a
+  threshold one sample, and above it the next, or vice versa). There are more
+  advanced triggers such as pulse width triggering, which triggers the scope
+  when a digital pulse of a certain width is detected.
+
+  \item \textbf{Input range} The minimum and maximum range of input voltages
+  that can be detected by the oscilloscope. A typical value would be from
+  \SI{\pm 50}{\mV} to \SI{\pm 50}{\V}.
+\end{itemize}
+
+\section{Ac. Practical Investigations}
+
+\subsection{Breadboard Frequency Investigation}
+
+A major limiting factor in the bandwidth and sampling rate of the oscilloscope
+will be due to stray capacitances and inductances on the breadboards. These will
+cause a great deal of noise at high frequencies. Because of this, the first
+practical investigation undertaken was to find the attenuation of a signal at a
+certain frequency.
+
+A signal generator was connected to an oscilloscope through a number of
+connections on a breadboard, and the amplitude of the final signal recorded at
+various frequencies. The same experiment was then repeated connecting the
+oscilloscope directly to the signal generator.
+
+For each frequency, the gain in \SI{}{\dB} was then calculated using the
+equation
+
+\begin{align*}
+\text{Gain} & = 10\log_{10}\left(\frac{P_{out}}{P_{in}}\right)\\
+            & = 10\log_{10}\left[\frac{\frac{\left(V_{out}\right)^2}{R_{out}}}{\frac{\left(V_{in}\right)^2}{R_{in}}}\right]\\
+            & \approx 10\log_{10}\left[\frac{\left(V_{out}\right)^2}{\left(V_{in}\right)^2}\right]\\
+            & = 20\log_{10}\left(\frac{V_{out}}{V_{in}}\right)
+\end{align*}
+
+\fxwarning{Photos and results}
+
+\subsection{Reliability of Signal Generator}
+
+As a signal generator will be a vital part of testing the oscilloscope, it would
+be wise to test it's accuracy first. A signal generator producing a sine wave
+was connected directly to an oscilloscope, and the output from the oscilloscope
+looked at to see how much it looked like a sine wave.
+
+\fxwarning{Photos and results}
+
+\section{Ad., Ae. Numerical Parameters}
+
+\subsection*{Frequency and Sampling Rate}
+
+The sampling rate should be as high as feasibly possible to allow the
+oscilloscope a wide variety of uses. By \textcite{shanon_Nyquist}, the maximum
+frequency that we can sample is half the sampling rate. In reality, because of
+the basic real-time sampling method being used it must be at the very least 10
+times less than the sampling rate.
+
+ADCs in a DIP package (suitable for breadboards) are not readily available
+beyond \SI{500}{\kHz}, so that shall be chosen as the sampling rate. This means
+the maximum frequency that should be sampled is \SI{50}{\kHz}.
+
+\subsection*{Bandwidth}
+
+The maximum frequency into the analogue amplification stage will be
+\SI{50}{\kHz}, but we also need to take into consideration harmonics. To be
+safe, we will specify a minimum bandwidth of \SI{500}{\kHz}.
+
+\subsection*{Resolution}
+
+Inaccuracies in the oscilliscope output are more likely to be caused by the
+breadboard-based design than a low resolution, so an 8 bit resolution will
+suffice. This also means ADCs will be more readily available, as 8 bit DIP ADCs
+are much more common than higher resolution ones.
+
+\subsection*{Memory Depth}
+
+This needs to be big enough to have a precise enough signal horizontally, but
+small enough so that it can easily be stored in the FPGA. For these reasons, 512
+words (equivalent to 4096 bits with the 8 bit resolution) will be chosen.
+
+\subsection*{Input Range}
+
+For the minimum input range, we'll choose the standard \SI{\pm 50}{\mV}, however
+for the maximum input range the highest power supplies available in school are
+for \SI{12}{\V}, so we'll choose \SI{\pm 12}{\V}.
+
+\subsection*{Triggers Available}
+
+For the purposes of this project, simple edge triggering will more than suffice.
+
+
+\section{Af., Ag. Alternative Solutions}
+
+As the FPGA and microcontroller will be programmed as part of the project, the
+standard they use to communicate with each other can be decided.
+
+The three main choices considered were SPI, UART and \ITC. While other choices
+are available (such as RS232), they are much more difficult to implement, so
+beyond the scope of this project.
+
+\subsection{SPI}
+
+The SPI (Serial Peripheral Interface) standard consists of four wires: $SCLK$,
+$MOSI$, $MISO$ and $\overline{SS}$. In general terms:
+
+\begin{itemize}
+  \item On the rising/falling edge of $SCLK$ (controlled by master), one bit is
+  transferred from master to slave on $MOSI$ and from slave to master on $MISO$.
+  \item $\overline{SS}$ must be low to select the slave.
+\end{itemize}
+
+Advantages:
+
+\begin{itemize}
+  \item Full duplex (allows communication in both ways simeltanousely)
+  \item Very simple
+  \item Very flexible as to the data transferred
+  \item Throughput can be controlled simply be changing the speed $SCLK$ is
+  generated at
+\end{itemize}
+
+Disadvantages:
+
+\begin{itemize}
+  \item No inbuilt error checking, so only suitable for small distances and very
+  susceptible to noise
+\end{itemize}
+
+
+\subsection{UART}
+
+UART (Universal Asynchronous Receiver Transmitter) is another very commonly-used
+serial standard. The slave and master agree beforehand on the transmission
+speed, and data is then transmitted 1 bit at a time on a receive line and a
+transmit line. A start bit then a low bit is used to delimit the start of a
+packet of data, and an end bit then a high bit is used to delimit the end.
+
+Advantages:
+
+\begin{itemize}
+  \item Full duplex
+  \item Very simple
+  \item Does not rely on a clock being transmitted correctly
+\end{itemize}
+
+Disadvantages:
+
+\begin{itemize}
+  \item Data requires an extra 4 bits per packet transmitted
+  \item Transmission rate has to be agreed on beforehand and accurately
+  generated.
+  \item No inbuilt error checking, so only suitable for small distances and very
+  susceptible to noise.
+\end{itemize}
+
+\subsection{\ITC}
+
+\ITC (Inter-Integrated Circuit) is another common serial protocol that has
+slightly more complicated logic than SPI and UART. There are only 2 wires: $SCL$
+(clock) and $SDA$ (data). Data is send from either the slave or master on $SDA$
+on the rising/falling edge of $SCL$.
+
+The master initially sends a 7-bit address identifying the slave it's
+communicating with, and then a read/write bit (if one value, the slave will send
+the next bytes, and if the other value then the master will send the next
+bytes). The bytes are then transmitted, with the receiving device sending a low
+bit after the end of each byte to confirm it's been received.
+
+Advantages:
+
+\begin{itemize}
+  \item Only requires 2 wires
+  \item Throughput can be controlled simply be changing the speed $SCL$ is
+  generated at
+\end{itemize}
+
+Disadvantages:
+
+\begin{itemize}
+  \item Quite complicated to implement
+  \item No inbuilt error checking, so only suitable for small distances and very
+  susceptible to noise.
+\end{itemize}
+
+\subsection{Chosen Solution}
+
+For the oscilloscope, SPI will be used. The number of lines used is not a
+limiting factor, and no other option offers a key advantage over SPI without
+introducing a lot of complexity (such as \ITC).
+
+To alleviate the need for start and end bits, $\overline{SS}$ will be required
+to fall and stay low at the start of each packet, and become high at the end of
+each packet.
+
+Because of the large amount of data that needs to be transferred quickly, an
+extra 8 data lines will be added from master to slave. So on each clock pulse,
+one control bit to the slave (on $MOSI$), one control bit to the master (on
+$MISO$) and a data byte (on $DATA$) can be transferred.
+
+
+
+http://www.picotech.com/applications/oscilloscope_tutorial.html
+http://www.gabotronics.com/resources/hobbyists-oscilloscopes.htm
+http://www.picotech.com/education/oscilloscopes/advanced-triggering.html#pulse
+
+http://en.wikipedia.org/wiki/Serial_Peripheral_Interface_Bus
+http://electronics.stackexchange.com/questions/37814/usart-uart-rs232-usb-spi-i2c-ttl-etc-what-are-all-of-these-and-how-do-th
